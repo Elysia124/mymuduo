@@ -91,3 +91,4 @@ bin/
 .history
 .ionide
 .cache
+.vscode
