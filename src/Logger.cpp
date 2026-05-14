@@ -7,12 +7,12 @@ Logger& Logger::getInstance()
 {
     static Logger logger;
     return logger;
-};
+}
 
 void Logger::setLogLevel(int level)
 {
     logLevel_ = level;
-};
+}
 
 void Logger::log(std::string_view msg) const
 {
@@ -24,4 +24,4 @@ void Logger::log(std::string_view msg) const
     }
 
     std::cout << Timestamp::now().toString() << " : " << msg << std::endl;
-};
+}

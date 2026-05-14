@@ -4,7 +4,7 @@
 
 using namespace mymuduo;
 
-Poller::Poller(EventLoop* loop) : ownerLoop_(loop){};
+Poller::Poller(EventLoop* loop) : ownerLoop_(loop){}
 
 Poller::~Poller() = default;
 

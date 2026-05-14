@@ -11,7 +11,8 @@ Timestamp::Timestamp(int64_t microSecondsSinceEpoch) : microSecondsSinceEpoch_(m
 Timestamp now()
 {
     return Timestamp(time(nullptr));
-};
+}
+
 std::string Timestamp::toString() const
 {
     char buf[128]{};
@@ -26,4 +27,4 @@ std::string Timestamp::toString() const
              time->tm_min,
              time->tm_sec);
     return buf;
-};
+}

@@ -28,7 +28,7 @@ const int kPollTimeMs = 10000;
 int createEventfd()
 {
     int evtfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-    if (evtfd < 0) { LOG_FATAL("eventfd error: %s\n", strerror(ERROR)); }
+    if (evtfd < 0) { LOG_FATAL("eventfd error: %s\n", strerror(errno)); }
     return evtfd;
 }
 }   // namespace
@@ -45,7 +45,7 @@ EventLoop::EventLoop()
 {
     LOG_DEBUG("EvetnLoop created %p in this thread %d\n", this, threadId_);
 
-    if (t_loopInThisThread) {
+    if (t_loopInThisThread != nullptr) {
         LOG_FATAL("Another EventLoop %p exits int this thread %d\n", t_loopInThisThread, threadId_);
     }
     else {
@@ -105,13 +105,13 @@ void EventLoop::quit()
     if (!isInLoopThread()) { wakeup(); }
 }
 
-void EventLoop::runInLoopo(Functor cb)
+void EventLoop::runInLoop(Functor cb)
 {
     if (isInLoopThread()) { cb(); }
     else {
         queueInLoop(cb);
     }
-};
+}
 
 void EventLoop::queueInLoop(Functor cb)
 {
@@ -121,7 +121,7 @@ void EventLoop::queueInLoop(Functor cb)
     }
 
     if (!isInLoopThread() || callingPendingFunctors_) { wakeup(); }
-};
+}
 
 void EventLoop::wakeup() const
 {
@@ -129,23 +129,23 @@ void EventLoop::wakeup() const
     ssize_t n = ::write(wakeupFd_, &one, sizeof(one));
 
     if (n != sizeof(one)) { LOG_ERROR("EventLoop::wakeup() writes %lu\n bytes instead of %lu\n", n, sizeof(one)); }
-};
+}
 
 
 void EventLoop::updateChannel(Channel* channel)
 {
     poller_->updateChannel(channel);
-};
+}
 
 void EventLoop::removeChannel(Channel* channel)
 {
     poller_->removeChannel(channel);
-};
+}
 
 void EventLoop::hasChannel(Channel* channel)
 {
     poller_->hasChannel(channel);
-};
+}
 
 void EventLoop::doPendingFunctors()
 {

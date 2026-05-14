@@ -24,7 +24,7 @@ void Channel::tie(const std::shared_ptr<void>& obj)
 // 在 channel 所属的 eventLoop 中删除当前的 channel
 void Channel::remove()
 {
-    // loop_->removeChannel(this);
+    loop_->removeChannel(this);
 }
 
 /*
@@ -32,8 +32,8 @@ void Channel::remove()
 */
 void Channel::update() {
     // 通过 channel 所属的 eventLoop 调用 poller 的相应方法，注册 fd 的事件
-    // loop_->updateChannel(this);
-};
+    loop_->updateChannel(this);
+}
 
 void Channel::handleEvent(Timestamp receiveTime)
 {
@@ -45,7 +45,7 @@ void Channel::handleEvent(Timestamp receiveTime)
     else {
         handleEventWithGuard(receiveTime);
     }
-};
+}
 
 
 void Channel::handleEventWithGuard(Timestamp receiveTime)
@@ -67,4 +67,4 @@ void Channel::handleEventWithGuard(Timestamp receiveTime)
     if (static_cast<bool>(revents_ & EPOLLOUT)) {
         if (writeCallback_) { writeCallback_(); }
     }
-};
+}

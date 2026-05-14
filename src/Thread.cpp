@@ -11,12 +11,12 @@ Thread::Thread(ThreadFunc func, const std::string& n)
     : started_(false), joined_(false), tid_(0), func_(std::move(func)), name_(n)
 {
     setDefaultName();
-};
+}
 
 Thread::~Thread()
 {
     if (started_ && !joined_) { thread_.detach(); }
-};
+}
 
 void Thread::start()
 {
@@ -33,13 +33,13 @@ void Thread::start()
 
     // 确保能够获取到线程的 tid_
     sem_wait(&sem);
-};
+}
 
 void Thread::join()
 {
     joined_ = true;
     thread_.join();
-};
+}
 
 void Thread::setDefaultName()
 {
@@ -49,4 +49,4 @@ void Thread::setDefaultName()
         snprintf(buf, sizeof(buf), "Thread %d", num);
         name_ = buf;
     }
-};
+}

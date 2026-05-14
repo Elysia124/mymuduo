@@ -33,7 +33,7 @@ public:
     Timestamp pollReturnTime() const { return pollReturnTime_; }
 
     // 在当前loop中执行
-    void runInLoopo(Functor cb);
+    void runInLoop(Functor cb);
 
     // 把 cb 放入队列中，唤醒loop所在的线程，执行cb
     void queueInLoop(Functor cb);

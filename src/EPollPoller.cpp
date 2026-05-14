@@ -19,12 +19,13 @@ const int kDeleted = 2;   // channel 已从 poller 中删除，但 channels_ 中
 EPollPoller::EPollPoller(EventLoop* loop)
     : Poller(loop), events_(kInitEventListSize), epollfd_(::epoll_create1(EPOLL_CLOEXEC))
 {
-    if (epollfd_ < 0) { LOG_FATAL("epollfd create error: %s", strerror(ERROR)); }
-};
+    if (epollfd_ < 0) { LOG_FATAL("epollfd create error: %s", strerror(errno)); }
+}
+
 EPollPoller::~EPollPoller()
 {
     ::close(epollfd_);
-};
+}
 
 Timestamp EPollPoller::poll(int timeoutMs, ChannelList* activeChannels)
 {
@@ -44,14 +45,14 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList* activeChannels)
         }
         else {
             if (saveError != EINTR) {
-                LOG_ERROR("EPoller::poll() error: %s", strerror(ERROR));
+                LOG_ERROR("EPoller::poll() error: %s", strerror(errno));
                 errno = saveError;
             }
         }
     }
 
     return now;
-};
+}
 
 void EPollPoller::updateChannel(Channel* channel)
 {
@@ -78,7 +79,7 @@ void EPollPoller::updateChannel(Channel* channel)
             update(EPOLL_CTL_MOD, channel);
         }
     }
-};
+}
 
 // channel->remove => eventLoop->removeChannel => poller->removeChannel
 void EPollPoller::removeChannel(Channel* channel)
@@ -95,7 +96,7 @@ void EPollPoller::removeChannel(Channel* channel)
     // 从 channels 中删除 channel
     channels_.erase(fd);
     channel->setIndex(kNew);
-};
+}
 
 void EPollPoller::fillActiveChannels(int numEvents, ChannelList* activeChannels) const
 {
@@ -105,7 +106,7 @@ void EPollPoller::fillActiveChannels(int numEvents, ChannelList* activeChannels)
         channel->setRevents(events_[i].events);
         activeChannels->push_back(channel);
     }
-};
+}
 
 void EPollPoller::update(int operation, Channel* channel) const
 {
@@ -115,9 +116,9 @@ void EPollPoller::update(int operation, Channel* channel) const
     int fd = channel->fd();
 
     if (::epoll_ctl(epollfd_, operation, fd, &event) < 0) {
-        if (operation == EPOLL_CTL_DEL) { LOG_ERROR("epoll_cctl_del error: %s\n", strerror(ERROR)); }
+        if (operation == EPOLL_CTL_DEL) { LOG_ERROR("epoll_cctl_del error: %s\n", strerror(errno)); }
         else {
-            LOG_FATAL("epoll_cctl_add/mod error: %s\n", strerror(ERROR));
+            LOG_FATAL("epoll_cctl_add/mod error: %s\n", strerror(errno));
         }
     }
-};
+}

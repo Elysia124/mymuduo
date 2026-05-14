@@ -25,9 +25,9 @@ public:
     void handleEvent(Timestamp receiveTime);
 
     // 设置回调函数对象
-    void setReadCallback(ReadEventCallback cb) { readCallback_ = std::move(cb); };
-    void setWriteCallback(EventCallback cb) { writeCallback_ = std::move(cb); };
-    void setCloseallback(EventCallback cb) { closeCallback_ = std::move(cb); };
+    void setReadCallback(ReadEventCallback cb) { readCallback_ = std::move(cb); }
+    void setWriteCallback(EventCallback cb) { writeCallback_ = std::move(cb); }
+    void setCloseallback(EventCallback cb) { closeCallback_ = std::move(cb); }
     void seterrorallback(EventCallback cb) { errorCallback_ = std::move(cb); }
 
     // 防止当 channel 被手动 remove 后，channel还在执行回调操作
@@ -47,17 +47,17 @@ public:
     {
         events_ &= ~kReadEvent;
         update();
-    };
+    }
     void enableWriting()
     {
         events_ |= kWriteEvent;
         update();
-    };
+    }
     void disableWriting()
     {
         events_ &= ~kWriteEvent;
         update();
-    };
+    }
     void disableAll()
     {
         events_ = kNoneEvent;
