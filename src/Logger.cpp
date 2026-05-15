@@ -16,6 +16,8 @@ void Logger::setLogLevel(int level)
 
 void Logger::log(std::string_view msg) const
 {
+    std::lock_guard<std::mutex> lock(mutex_);
+    
     switch (logLevel_) {
     case INFO: std::cout << "[INFO]"; break;
     case ERROR: std::cout << "[ERROR]"; break;

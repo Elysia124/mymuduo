@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CurrentThread.h"
-#include "Poller.h"
 #include "Timestamp.h"
 #include "Logger.h"
 #include "noncopyable.h"
@@ -14,7 +13,7 @@
 namespace mymuduo {
 
 class Channel;
-class POller;
+class Poller;
 
 // 事件循环类 主要包含两个大模块 Channel Poller(Epoll的抽象)
 class EventLoop : noncopyable

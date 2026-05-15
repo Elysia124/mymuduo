@@ -14,8 +14,17 @@ EventLoopThread::~EventLoopThread()
 {
     exiting_ = true;
 
-    if (loop_ != nullptr) {
-        loop_->quit();
+    EventLoop* loop = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        loop = loop_;
+    }
+
+    if (loop != nullptr) {
+        loop->quit();
+    }
+
+    if (thread_.joinable()) {
         thread_.join();
     }
 }

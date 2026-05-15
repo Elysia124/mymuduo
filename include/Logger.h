@@ -5,6 +5,7 @@
 #include "noncopyable.h"
 
 #include <cstdio>
+#include <mutex>
 #include <string_view>
 
 // LOG_INFO("%s %d", arg1, arg2)
@@ -33,7 +34,7 @@
         char buf[1024]{};                                         \
         snprintf(buf, 1024, logmsgFormat, ##__VA_ARGS__);         \
         logger.log(buf);                                          \
-        exit(-1);                                                  \
+        exit(-1);                                                 \
     } while (0)
 
 #ifdef DEBUG_ON
@@ -78,5 +79,7 @@ private:
 
     Logger() = default;
     ~Logger() = default;
+
+    mutable std::mutex mutex_;
 };
 }   // namespace mymuduo

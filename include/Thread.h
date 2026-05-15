@@ -26,6 +26,8 @@ public:
 
     static int numCreated() { return numCreated_; }
 
+    bool joinable() const noexcept { return thread_.joinable(); };
+
 private:
     void setDefaultName();
     bool started_;
