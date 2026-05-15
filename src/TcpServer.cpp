@@ -43,7 +43,7 @@ TcpServer::~TcpServer()
     for (auto& item : connections_) {
         TcpConnectionPtr conn(item.second);
         item.second.reset();
-        conn->getLoop()->runInLoop([conn] { conn->connectDestory(); });
+        conn->getLoop()->runInLoop([conn] { conn->connectDestroy(); });
     }
 }
 
@@ -111,7 +111,7 @@ void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn)
 {
     LOG_INFO("TcpServer::removeConnectionInLoop [%s] - connection %s\n", name_.c_str(), conn->name().c_str());
 
-    connections_.erase(name_);
+    connections_.erase(conn->name());
     auto* ioLoop = conn->getLoop();
-    ioLoop->queueInLoop([conn] { conn->connectDestory(); });
+    ioLoop->queueInLoop([conn] { conn->connectDestroy(); });
 }

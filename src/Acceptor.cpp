@@ -40,7 +40,7 @@ void Acceptor::listen()
 {
     listenning_ = true;
     acceptSocket_.listen();
-    acceptChannel_.enabelReading();
+    acceptChannel_.enableReading();
 }
 
 // 新用户连接

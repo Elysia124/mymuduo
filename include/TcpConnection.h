@@ -40,7 +40,7 @@ public:
 
     void connectEstablished();
 
-    void connectDestory();
+    void connectDestroy();
 
 
 private:

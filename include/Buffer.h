@@ -13,14 +13,14 @@ public:
     static constexpr size_t kInitialSize = 1024;   // 缓冲区默认大小
 
     explicit Buffer(size_t initialSize = kInitialSize)
-        : buffer_(kCheapPrepend + kInitialSize), readerIndex_(kCheapPrepend), writerIndex_(kCheapPrepend)
+        : buffer_(kCheapPrepend + initialSize), readerIndex_(kCheapPrepend), writerIndex_(kCheapPrepend)
     {}
 
     // 返回可读字节数
     size_t readableBytes() const { return writerIndex_ - readerIndex_; }
 
     // 返回可写字节数
-    size_t writableBytes() const { return buffer_.size() - readerIndex_; }
+    size_t writableBytes() const { return buffer_.size() - writerIndex_; }
 
     // 返回(预留 + 可回收空间)字节数
     size_t prependableBytes() const { return readerIndex_; }

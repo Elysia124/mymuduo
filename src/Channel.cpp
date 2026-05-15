@@ -1,15 +1,9 @@
 #include "Channel.h"
 #include "EventLoop.h"
 #include "Logger.h"
-#include <cstdint>
 #include <memory>
-#include <sys/epoll.h>
 
 using namespace mymuduo;
-
-const uint32_t kNoneEvent = 0;
-const uint32_t kReadEvent = EPOLLIN | EPOLLPRI;
-const uint32_t kWriteEvent = EPOLLOUT;
 
 Channel::Channel(EventLoop* loop, int fd) : loop_(loop), fd_(fd), events_(0), revents_(0), index_(-1), tied_(false) {}
 

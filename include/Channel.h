@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <sys/epoll.h>
 namespace mymuduo {
 class EventLoop;
 ;
@@ -27,8 +28,8 @@ public:
     // 设置回调函数对象
     void setReadCallback(ReadEventCallback cb) { readCallback_ = std::move(cb); }
     void setWriteCallback(EventCallback cb) { writeCallback_ = std::move(cb); }
-    void setCloseallback(EventCallback cb) { closeCallback_ = std::move(cb); }
-    void seterrorallback(EventCallback cb) { errorCallback_ = std::move(cb); }
+    void setCloseCallback(EventCallback cb) { closeCallback_ = std::move(cb); }
+    void setErrorCallback(EventCallback cb) { errorCallback_ = std::move(cb); }
 
     // 防止当 channel 被手动 remove 后，channel还在执行回调操作
     void tie(const std::shared_ptr<void>&);
@@ -38,7 +39,7 @@ public:
     void setRevents(uint32_t revt) { revents_ = revt; }
 
     // 设置 fd 相应的事件状态
-    void enabelReading()
+    void enableReading()
     {
         events_ |= kReadEvent;
         update();
@@ -66,7 +67,7 @@ public:
 
     // 返回 fd 当前的事件状态
     bool isNoneEvent() const { return events_ == kNoneEvent; }
-    bool isReaing() const { return static_cast<bool>(events_ & kReadEvent); }
+    bool isReading() const { return static_cast<bool>(events_ & kReadEvent); }
     bool isWriting() const { return static_cast<bool>(events_ & kWriteEvent); }
 
     int index() const { return index_; }
@@ -82,14 +83,14 @@ private:
     void update();
     void handleEventWithGuard(Timestamp receiveTime);
 
-    static const uint32_t kNoneEvent;
-    static const uint32_t kReadEvent;
-    static const uint32_t kWriteEvent;
+    inline static constexpr uint32_t kNoneEvent = 0;
+    inline static constexpr uint32_t kReadEvent = EPOLLIN | EPOLLPRI;
+    inline static constexpr uint32_t kWriteEvent = EPOLLOUT;
 
-    EventLoop* loop_;   // 事件循环
-    const int fd_;      // 文件描述符，Poller的监听对象
-    uint32_t events_;        // 向Poller注册的感兴趣的事件
-    uint32_t revents_;       // Poller返回的实际发生的事件
+    EventLoop* loop_;    // 事件循环
+    const int fd_;       // 文件描述符，Poller的监听对象
+    uint32_t events_;    // 向Poller注册的感兴趣的事件
+    uint32_t revents_;   // Poller返回的实际发生的事件
     int index_;
 
     std::weak_ptr<void> tie_;

@@ -44,7 +44,7 @@ public:
 
     void updateChannel(Channel* channel);
     void removeChannel(Channel* channel);
-    void hasChannel(Channel* channel);
+    bool hasChannel(Channel* channel);
 
     // 判断 eventloop 对象是否在自己的线程中
     /*

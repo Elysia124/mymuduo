@@ -59,7 +59,7 @@ EventLoop::EventLoop()
     wakeupChannel_->setReadCallback([this](Timestamp ts) { handleRead(); });
 
     // 每个 eventloop 监听 wakeupfd 的读事件
-    wakeupChannel_->enabelReading();
+    wakeupChannel_->enableReading();
 }
 
 EventLoop::~EventLoop()
@@ -155,9 +155,9 @@ void EventLoop::removeChannel(Channel* channel)
     poller_->removeChannel(channel);
 }
 
-void EventLoop::hasChannel(Channel* channel)
+bool EventLoop::hasChannel(Channel* channel)
 {
-    poller_->hasChannel(channel);
+    return poller_->hasChannel(channel);
 }
 
 void EventLoop::doPendingFunctors()

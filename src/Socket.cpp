@@ -2,12 +2,26 @@
 #include "InetAddress.h"
 #include "Logger.h"
 #include <asm-generic/socket.h>
+#include <cerrno>
+#include <cstring>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 using namespace mymuduo;
+
+namespace {
+void setNonBlockAndCloseOnExec(int connfd)
+{
+    int optVal = 1;
+    socklen_t optlen = sizeof(optVal);
+    if (::setsockopt(connfd, SOL_SOCKET, SOCK_NONBLOCK | SOCK_CLOEXEC, &optVal, optlen) > 0) {
+        LOG_FATAL("%s%s%d setNonBlockAndCloseOnExec fail: %s\n", __FILE__, __FUNCTION__, __LINE__, strerror(errno));
+    };
+}
+
+}   // namespace
 
 Socket::~Socket()
 {
@@ -36,7 +50,8 @@ int Socket::accept(InetAddress* peeraddr) const
     socklen_t len = sizeof(addr);
 
     int connfd = ::accept(sockfd_, reinterpret_cast<sockaddr*>(&addr), &len);
-
+    setNonBlockAndCloseOnExec(connfd);
+    
     if (connfd >= 0) {
         peeraddr->setSockAddr(addr);
     }

@@ -38,10 +38,10 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string nameArg, int sockfd, c
 {
     channel_->setReadCallback([this](Timestamp ts) { handleRead(ts); });
     channel_->setWriteCallback([this] { handleWrite(); });
-    channel_->setCloseallback([this] { handleClose(); });
-    channel_->seterrorallback([this] { handleError(); });
+    channel_->setCloseCallback([this] { handleClose(); });
+    channel_->setErrorCallback([this] { handleError(); });
 
-    LOG_DEBUG("TcpConnection::ctor[%s] at fd = %d\n", name_.c_str(), fd);
+    LOG_DEBUG("TcpConnection::ctor[%s] at fd = %d\n", name_.c_str(), sockfd);
     socket_->setKeepAlive(true);
 }
 
@@ -86,7 +86,7 @@ void TcpConnection::handleWrite()
                     loop_->queueInLoop([self] { self->writeCompleteCallback_(self); });
                 }
                 if (state_.load() == kDisconnecting) {
-                    shutdown();
+                    shutdownInLoop();
                 }
             }
         }
@@ -133,9 +133,10 @@ void TcpConnection::send(const std::string& buf)
         }
         else {
             auto self = shared_from_this();
+            std::string msg = buf;
 
             // runInLoop会判断是否在自己所属的线程
-            loop_->runInLoop([&, self]() { sendInLoop(buf.c_str(), buf.size()); });
+            loop_->runInLoop([&, msg = std::move(msg), self]() { sendInLoop(buf.c_str(), buf.size()); });
         }
     }
 }
@@ -177,7 +178,7 @@ void TcpConnection::sendInLoop(const void* message, size_t len)
         size_t oldLen = outputBuffer_.readableBytes();
         if (oldLen + remaining >= highWaterMark_ && oldLen < highWaterMark_ && highWaterMarkCallback_) {
             auto self = shared_from_this();
-            loop_->queueInLoop([&, self] { self->highWaterMarkCallback_(self, oldLen + remaining); });
+            loop_->queueInLoop([&, len = oldLen + remaining, self] { self->highWaterMarkCallback_(self, len); });
         }
 
         outputBuffer_.append(static_cast<const char*>(message) + nwrote, remaining);
@@ -193,19 +194,19 @@ void TcpConnection::connectEstablished()
 {
     setState(kconnected);
     channel_->tie(shared_from_this());
-    channel_->enabelReading();
+    channel_->enableReading();
 
     connectionCallback_(shared_from_this());
 }
 
 // 连接关闭
-void TcpConnection::connectDestory()
+void TcpConnection::connectDestroy()
 {
     if (state_.load() == kconnected) {
         setState(kDisconnected);
         channel_->disableAll();
 
-        ConnectionCallback(shared_from_this());
+        connectionCallback_(shared_from_this());
     }
 
     channel_->remove();   // 把 channel 从 poller中删除
