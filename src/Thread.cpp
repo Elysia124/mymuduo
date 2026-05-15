@@ -1,11 +1,13 @@
 #include "Thread.h"
 #include "CurrentThread.h"
 #include "Logger.h"
+
 #include <cassert>
+#include <cerrno>
 #include <cstdio>
 #include <semaphore.h>
 #include <thread>
-
+#include <utility>
 
 using namespace mymuduo;
 
@@ -25,6 +27,7 @@ Thread::~Thread()
 void Thread::start()
 {
     assert(!started_);
+    assert(func_);
     started_ = true;
 
     sem_t sem;   // 信号量
@@ -42,7 +45,9 @@ void Thread::start()
         *tid = CurrentThread::tid();
 
         // 通知 start()：tid_ 已经写好了，可以继续往下走
-        sem_post(&sem);   // +1
+        if (sem_post(&sem) != 0) {   // +1
+            LOG_FATAL("sem_post error\n");
+        }
 
         // 执行用户传入的线程函数
         func();
@@ -50,7 +55,7 @@ void Thread::start()
 
     // 确保能够获取到线程的 tid_
     // sem_wait 可能被信号中断，errno == EINTR 时应该继续等待
-    while (sem_wait(&sem) != 0) {
+    while (sem_wait(&sem) != 0) {   // -1
         if (errno != EINTR) {
             LOG_FATAL("sem_wait error\n");
         }
