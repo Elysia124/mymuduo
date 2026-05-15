@@ -3,6 +3,7 @@
 #include "CurrentThread.h"
 #include "Logger.h"
 #include "Poller.h"
+#include "Timestamp.h"
 #include <climits>
 #include <cstdint>
 #include <cstring>
@@ -28,7 +29,9 @@ const int kPollTimeMs = 10000;
 int createEventfd()
 {
     int evtfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-    if (evtfd < 0) { LOG_FATAL("eventfd error: %s\n", strerror(errno)); }
+    if (evtfd < 0) {
+        LOG_FATAL("eventfd error: %s\n", strerror(errno));
+    }
     return evtfd;
 }
 }   // namespace
@@ -53,7 +56,7 @@ EventLoop::EventLoop()
     }
 
     // 设置wakeupfd的时间类型及发生事件后的回调操作
-    wakeupChannel_->setReadCallback([this](auto&& arg) { handleRead(); });
+    wakeupChannel_->setReadCallback([this](Timestamp ts) { handleRead(); });
 
     // 每个 eventloop 监听 wakeupfd 的读事件
     wakeupChannel_->enabelReading();
@@ -73,7 +76,9 @@ void EventLoop::handleRead() const
     uint64_t one = 1;
     ssize_t n = read(wakeupFd_, &one, sizeof(one));
 
-    if (n != sizeof(one)) { LOG_ERROR("Eventloop::handleRead() read %lu bytes\n", n); }
+    if (n != sizeof(one)) {
+        LOG_ERROR("Eventloop::handleRead() read %lu bytes\n", n);
+    }
 }
 
 
@@ -102,12 +107,16 @@ void EventLoop::quit()
 {
     quit_ = true;
 
-    if (!isInLoopThread()) { wakeup(); }
+    if (!isInLoopThread()) {
+        wakeup();
+    }
 }
 
 void EventLoop::runInLoop(Functor cb)
 {
-    if (isInLoopThread()) { cb(); }
+    if (isInLoopThread()) {
+        cb();
+    }
     else {
         queueInLoop(cb);
     }
@@ -120,7 +129,9 @@ void EventLoop::queueInLoop(Functor cb)
         pendingFunctors_.push_back(std::move(cb));
     }
 
-    if (!isInLoopThread() || callingPendingFunctors_) { wakeup(); }
+    if (!isInLoopThread() || callingPendingFunctors_) {
+        wakeup();
+    }
 }
 
 void EventLoop::wakeup() const
@@ -128,7 +139,9 @@ void EventLoop::wakeup() const
     uint64_t one = 1;
     ssize_t n = ::write(wakeupFd_, &one, sizeof(one));
 
-    if (n != sizeof(one)) { LOG_ERROR("EventLoop::wakeup() writes %lu\n bytes instead of %lu\n", n, sizeof(one)); }
+    if (n != sizeof(one)) {
+        LOG_ERROR("EventLoop::wakeup() writes %lu\n bytes instead of %lu\n", n, sizeof(one));
+    }
 }
 
 

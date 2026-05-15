@@ -15,7 +15,9 @@ Thread::Thread(ThreadFunc func, const std::string& n)
 
 Thread::~Thread()
 {
-    if (started_ && !joined_) { thread_.detach(); }
+    if (started_ && !joined_) {
+        thread_.detach();
+    }
 }
 
 void Thread::start()

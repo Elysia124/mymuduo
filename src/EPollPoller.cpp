@@ -19,7 +19,9 @@ const int kDeleted = 2;   // channel 已从 poller 中删除，但 channels_ 中
 EPollPoller::EPollPoller(EventLoop* loop)
     : Poller(loop), events_(kInitEventListSize), epollfd_(::epoll_create1(EPOLL_CLOEXEC))
 {
-    if (epollfd_ < 0) { LOG_FATAL("epollfd create error: %s", strerror(errno)); }
+    if (epollfd_ < 0) {
+        LOG_FATAL("epollfd create error: %s", strerror(errno));
+    }
 }
 
 EPollPoller::~EPollPoller()
@@ -39,7 +41,9 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList* activeChannels)
         LOG_DEBUG("%d events happened\n", numEvents);
         fillActiveChannels(numEvents, activeChannels);
 
-        if (numEvents == static_cast<int>(events_.size())) { events_.resize(events_.size() * 2); }
+        if (numEvents == static_cast<int>(events_.size())) {
+            events_.resize(events_.size() * 2);
+        }
         else if (numEvents == 0) {
             LOG_DEBUG("%s timeout!\n", __FUNCTION__);
         }
@@ -64,7 +68,9 @@ void EPollPoller::updateChannel(Channel* channel)
              channel->index());
 
     if (index == kNew || index == kDeleted) {
-        if (index == kNew) { channels_[channel->fd()] = channel; }
+        if (index == kNew) {
+            channels_[channel->fd()] = channel;
+        }
 
         channel->setIndex(kAdded);
         update(EPOLL_CTL_ADD, channel);
@@ -116,7 +122,9 @@ void EPollPoller::update(int operation, Channel* channel) const
     int fd = channel->fd();
 
     if (::epoll_ctl(epollfd_, operation, fd, &event) < 0) {
-        if (operation == EPOLL_CTL_DEL) { LOG_ERROR("epoll_cctl_del error: %s\n", strerror(errno)); }
+        if (operation == EPOLL_CTL_DEL) {
+            LOG_ERROR("epoll_cctl_del error: %s\n", strerror(errno));
+        }
         else {
             LOG_FATAL("epoll_cctl_add/mod error: %s\n", strerror(errno));
         }

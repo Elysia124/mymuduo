@@ -25,7 +25,9 @@ void Socket::bindAddress(const InetAddress& localaddr)
 
 void Socket::listen() const
 {
-    if (::listen(sockfd_, SOMAXCONN) < 0) { LOG_FATAL("listen sockfd %d fail\n", sockfd_); }
+    if (::listen(sockfd_, SOMAXCONN) < 0) {
+        LOG_FATAL("listen sockfd %d fail\n", sockfd_);
+    }
 }
 
 int Socket::accept(InetAddress* peeraddr) const
@@ -35,14 +37,18 @@ int Socket::accept(InetAddress* peeraddr) const
 
     int connfd = ::accept(sockfd_, reinterpret_cast<sockaddr*>(&addr), &len);
 
-    if (connfd >= 0) { peeraddr->setSockAddr(addr); }
+    if (connfd >= 0) {
+        peeraddr->setSockAddr(addr);
+    }
 
     return connfd;
 }
 
 void Socket::shutdownWrite() const
 {
-    if (::shutdown(sockfd_, SHUT_WR) < 0) { LOG_ERROR("shutdownWrite error\n"); }
+    if (::shutdown(sockfd_, SHUT_WR) < 0) {
+        LOG_ERROR("shutdownWrite error\n");
+    }
 }
 
 void Socket::setTcpNoDelay(bool on) const

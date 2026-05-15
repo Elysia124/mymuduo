@@ -6,7 +6,8 @@
 using namespace mymuduo;
 
 EventLoopThread::EventLoopThread(const ThreadInitCallback& cb, const std::string& name)
-    : loop_(nullptr), exiting_(false), thread_([this]() { threadFunc(); }), callback_(cb){}
+    : loop_(nullptr), exiting_(false), thread_([this]() { threadFunc(); }), callback_(cb)
+{}
 
 EventLoopThread::~EventLoopThread()
 {
@@ -37,7 +38,9 @@ void EventLoopThread::threadFunc()
 {
     EventLoop loop;
 
-    if (callback_) { callback_(&loop); }
+    if (callback_) {
+        callback_(&loop);
+    }
 
     {
         std::lock_guard<std::mutex> lock(mutex_);

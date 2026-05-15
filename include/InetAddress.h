@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 #include <netinet/in.h>
 #include <string>

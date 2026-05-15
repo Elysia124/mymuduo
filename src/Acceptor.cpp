@@ -2,6 +2,7 @@
 #include "InetAddress.h"
 #include "Logger.h"
 #include "Socket.h"
+#include "Timestamp.h"
 #include <cerrno>
 #include <cstring>
 #include <sys/socket.h>
@@ -26,7 +27,7 @@ Acceptor::Acceptor(EventLoop* loop, const InetAddress& listenAddr, bool reusepor
     acceptSocket_.setReuseAddr(true);
     acceptSocket_.setReusePort(reuseport);
     acceptSocket_.bindAddress(listenAddr);
-    acceptChannel_.setReadCallback([this](auto&& arg) { handelRead(); });
+    acceptChannel_.setReadCallback([this](Timestamp ts) { handelRead(); });
 }
 
 Acceptor::~Acceptor()
@@ -49,13 +50,17 @@ void Acceptor::handelRead()
     int connfd = acceptSocket_.accept(&peerAddr);
 
     if (connfd > 0) {
-        if (newConnectionCallback_) { newConnectionCallback_(connfd, peerAddr); }
+        if (newConnectionCallback_) {
+            newConnectionCallback_(connfd, peerAddr);
+        }
         else {
             ::close(connfd);
         }
     }
     else {
-        if (errno == EMFILE) { LOG_ERROR("%s:%s:%d sockfd reach limit\n", __FILE__, __FUNCTION__, __LINE__); }
+        if (errno == EMFILE) {
+            LOG_ERROR("%s:%s:%d sockfd reach limit\n", __FILE__, __FUNCTION__, __LINE__);
+        }
         else {
             LOG_ERROR("%s:%s:%d accept error: %s\n", __FILE__, __FUNCTION__, __LINE__, strerror(errno));
         }
