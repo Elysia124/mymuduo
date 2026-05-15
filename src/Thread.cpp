@@ -1,5 +1,6 @@
 #include "Thread.h"
 #include "CurrentThread.h"
+#include <cassert>
 #include <cstdio>
 #include <semaphore.h>
 #include <thread>
@@ -22,6 +23,7 @@ Thread::~Thread()
 
 void Thread::start()
 {
+    assert(!started_);
     started_ = true;
 
     sem_t sem;   // 信号量
@@ -35,6 +37,8 @@ void Thread::start()
 
     // 确保能够获取到线程的 tid_
     sem_wait(&sem);
+
+    sem_destroy(&sem);
 }
 
 void Thread::join()

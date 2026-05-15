@@ -46,7 +46,7 @@ TcpServer::~TcpServer()
     for (auto& item : connections_) {
         TcpConnectionPtr conn(item.second);
         item.second.reset();
-        conn->getLoop()->runInLoop([conn] { conn->connectDestroy(); });
+        conn->getLoop()->runInLoop([conn = std::move(conn)] { conn->connectDestroy(); });
     }
 }
 
@@ -107,7 +107,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
 
 void TcpServer::removeConnection(TcpConnectionPtr conn)
 {
-    loop_->runInLoop([this, conn] { removeConnectionInLoop(std::move(conn)); });
+    loop_->runInLoop([this, conn = std::move(conn)] { removeConnectionInLoop(conn); });
 }
 
 void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn)
