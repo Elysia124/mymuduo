@@ -24,7 +24,8 @@ std::string InetAddress::toIp() const
 std::string InetAddress::toIpPort() const
 {
     std::string ipPort = toIp();
-    ipPort += ":" + std::to_string(::ntohs(addr_.sin_port));
+    ipPort.push_back(':');
+    ipPort += std::to_string(toPort());
     return ipPort;
 }
 

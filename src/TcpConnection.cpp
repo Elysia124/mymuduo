@@ -49,7 +49,7 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string nameArg, int sockfd, c
 
 TcpConnection::~TcpConnection()
 {
-    LOG_DEBUG("TcpConnection::dtor[%s] at fd = %d state=%d\n", name_.c_str(), channel_->fd(), state_.load());
+    LOG_DEBUG("TcpConnection::dtor[%s] at fd = %d state=%d\n", name_.c_str(), channel_->fd(), static_cast<int>(state_.load()));
 }
 
 void TcpConnection::handleRead(Timestamp receiveTime)
@@ -103,7 +103,7 @@ void TcpConnection::handleWrite()
 
 void TcpConnection::handleClose()
 {
-    LOG_INFO("TcpConnection::handleClose fd = %d state = %d\n", channel_->fd(), state_.load());
+    LOG_INFO("TcpConnection::handleClose fd = %d state = %d\n", channel_->fd(), static_cast<int>(state_.load()));
     setState(StateE::kDisconnected);
     channel_->disableAll();
 

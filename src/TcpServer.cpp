@@ -31,7 +31,7 @@ TcpServer::TcpServer(EventLoop* loop, const InetAddress& listenAddr, std::string
     , ipPort_(listenAddr.toIpPort())
     , name_(std::move(nameArg))
     , acceptor_(std::make_unique<Acceptor>(loop, listenAddr, option == KReusePort))
-    , thread_pool_(std::make_unique<EventLoopThreadPool>(loop, name_))
+    , thread_pool_(std::make_shared<EventLoopThreadPool>(loop, name_))
     , connectionCallback_(defaultConnectionCallback)
     , messageCallback_(defaultMessageCallback)
     , started_(0)
