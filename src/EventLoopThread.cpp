@@ -6,8 +6,8 @@
 
 using namespace mymuduo;
 
-EventLoopThread::EventLoopThread(ThreadInitCallback cb, const std::string& name)
-    : loop_(nullptr), exiting_(false), thread_([this]() { threadFunc(); }, name), callback_(std::move(cb))
+EventLoopThread::EventLoopThread(ThreadInitCallback cb, std::string name)
+    : loop_(nullptr), exiting_(false), thread_([this]() { threadFunc(); }, std::move(name)), callback_(std::move(cb))
 {}
 
 EventLoopThread::~EventLoopThread()

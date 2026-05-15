@@ -1,14 +1,14 @@
 #include "EventLoopThreadPool.h"
 #include "EventLoop.h"
 #include "EventLoopThread.h"
-#include <algorithm>
 #include <cstdio>
 #include <memory>
+#include <utility>
 
 using namespace mymuduo;
 
-EventLoopThreadPool::EventLoopThreadPool(EventLoop* baseLoop, const std::string& nameArg)
-    : baseLoop_(baseLoop), name_(nameArg), started_(false), numThreads_(0), next_(0)
+EventLoopThreadPool::EventLoopThreadPool(EventLoop* baseLoop, std::string nameArg)
+    : baseLoop_(baseLoop), name_(std::move(nameArg)), started_(false), numThreads_(0), next_(0)
 {}
 
 EventLoopThreadPool::~EventLoopThreadPool() {}

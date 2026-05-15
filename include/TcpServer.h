@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 namespace mymuduo {
 class TcpServer : noncopyable
@@ -24,16 +25,16 @@ public:
         KReusePort
     };
 
-    TcpServer(EventLoop* loop, const InetAddress& listenAddr, const std::string& nameArg, Option option = kNoReusePort);
+    TcpServer(EventLoop* loop, const InetAddress& listenAddr, std::string nameArg, Option option = kNoReusePort);
     ~TcpServer();
 
     void setThreadNum(int numThreads);
     void start();
 
-    void setThreadInitCallback(const ThreadInitCallback& cb) { threadInitCallback_ = cb; };
-    void setConnectionCallback(const ConnectionCallback& cb) { connectionCallback_ = cb; };
-    void setMessageCallback(const MessageCallback& cb) { messageCallback_ = cb; };
-    void setWriteCompleteCallback(const WriteCompleteCallback& cb) { writeCompleteCallback_ = cb; };
+    void setThreadInitCallback(ThreadInitCallback cb) { threadInitCallback_ = std::move(cb); };
+    void setConnectionCallback(ConnectionCallback cb) { connectionCallback_ = std::move(cb); };
+    void setMessageCallback(MessageCallback cb) { messageCallback_ = std::move(cb); };
+    void setWriteCompleteCallback(WriteCompleteCallback cb) { writeCompleteCallback_ = std::move(cb); };
 
 private:
     void newConnection(int sockfd, const InetAddress& peeraddr);

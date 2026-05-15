@@ -30,6 +30,7 @@ public:
     bool connected() const { return state_ == StateE::kconnected; }
 
     void send(const std::string& buf);
+    void send(std::string&& buf);   // for rval
     void shutdown();
 
     void setConnectionCallback(ConnectionCallback cb) { connectionCallback_ = std::move(cb); }

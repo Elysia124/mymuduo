@@ -11,6 +11,7 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <utility>
 
 using namespace mymuduo;
 
@@ -25,12 +26,12 @@ EventLoop* checkNotNull(EventLoop* loop)
 
 }   // namespace
 
-TcpServer::TcpServer(EventLoop* loop, const InetAddress& listenAddr, const std::string& nameArg, Option option)
+TcpServer::TcpServer(EventLoop* loop, const InetAddress& listenAddr, std::string nameArg, Option option)
     : loop_(checkNotNull(loop))
     , ipPort_(listenAddr.toIpPort())
-    , name_(nameArg)
+    , name_(std::move(nameArg))
     , acceptor_(std::make_unique<Acceptor>(loop, listenAddr, option == KReusePort))
-    , thread_pool_(std::make_unique<EventLoopThreadPool>(loop, nameArg))
+    , thread_pool_(std::make_unique<EventLoopThreadPool>(loop, name_))
     , connectionCallback_(defaultConnectionCallback)
     , messageCallback_(defaultMessageCallback)
     , started_(0)
@@ -75,7 +76,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
 {
     auto* ioLoop = thread_pool_->getNextLoop();
     char buf[64];
-    snprintf(buf, sizeof(buf), "-%s#%d", ipPort_.c_str(), ++nextConnId_);
+    snprintf(buf, sizeof(buf), "-%s#%d", ipPort_.c_str(), nextConnId_++);
     std::string connName = name_ + buf;
 
     LOG_INFO("TcpServer::newConnection [%s] - new connection [%s] from %s",

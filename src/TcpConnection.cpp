@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstring>
 #include <memory>
+#include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -133,11 +134,22 @@ void TcpConnection::send(const std::string& buf)
             sendInLoop(buf.c_str(), buf.size());
         }
         else {
+            send(std::string(buf));   // call send(std::string&& buf)
+        }
+    }
+}
+
+void TcpConnection::send(std::string&& buf)
+{
+    if (state_.load() == StateE::kconnected) {
+        if (loop_->isInLoopThread()) {
+            sendInLoop(buf.c_str(), buf.size());
+        }
+        else {
             auto self = shared_from_this();
-            std::string msg = buf;
 
             // runInLoop会判断是否在自己所属的线程
-            loop_->runInLoop([self, msg = std::move(msg)]() { self->sendInLoop(msg.c_str(), msg.size()); });
+            loop_->runInLoop([self, msg = std::move(buf)]() { self->sendInLoop(msg.c_str(), msg.size()); });
         }
     }
 }

@@ -7,8 +7,8 @@
 
 using namespace mymuduo;
 
-Thread::Thread(ThreadFunc func, const std::string& n)
-    : started_(false), joined_(false), tid_(0), func_(std::move(func)), name_(n)
+Thread::Thread(ThreadFunc func, std::string n)
+    : started_(false), joined_(false), tid_(0), func_(std::move(func)), name_(std::move(n))
 {
     setDefaultName();
 }
