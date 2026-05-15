@@ -6,7 +6,7 @@ using namespace mymuduo;
 
 Poller* Poller::newDefaultPoller(EventLoop* loop)
 {
-    if (::getenv("MODUO_USE_POLL")) {
+    if (::getenv("MODUO_USE_POLL")) {   // not use
         return nullptr;
     }
     else {

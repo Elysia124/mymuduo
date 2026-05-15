@@ -27,7 +27,7 @@ Acceptor::Acceptor(EventLoop* loop, const InetAddress& listenAddr, bool reusepor
     acceptSocket_.setReuseAddr(true);
     acceptSocket_.setReusePort(reuseport);
     acceptSocket_.bindAddress(listenAddr);
-    acceptChannel_.setReadCallback([this](Timestamp ts) { handelRead(); });
+    acceptChannel_.setReadCallback([this](Timestamp ts) { handleRead(); });
 }
 
 Acceptor::~Acceptor()
@@ -44,25 +44,31 @@ void Acceptor::listen()
 }
 
 // 新用户连接
-void Acceptor::handelRead()
+void Acceptor::handleRead()
 {
-    InetAddress peerAddr;
-    int connfd = acceptSocket_.accept(&peerAddr);
+    while (true) {
+        InetAddress peerAddr;
+        int connfd = acceptSocket_.accept(&peerAddr);
 
-    if (connfd > 0) {
-        if (newConnectionCallback_) {
-            newConnectionCallback_(connfd, peerAddr);
+        if (connfd >= 0) {
+            if (newConnectionCallback_) {
+                newConnectionCallback_(connfd, peerAddr);
+            }
+            else {
+                ::close(connfd);
+            }
         }
         else {
-            ::close(connfd);
-        }
-    }
-    else {
-        if (errno == EMFILE) {
-            LOG_ERROR("%s:%s:%d sockfd reach limit\n", __FILE__, __FUNCTION__, __LINE__);
-        }
-        else {
-            LOG_ERROR("%s:%s:%d accept error: %s\n", __FILE__, __FUNCTION__, __LINE__, strerror(errno));
+            if (errno == EAGAIN) {   // no more new connection
+                break;
+            }
+            if (errno == EMFILE) {
+                LOG_ERROR("%s:%s:%d sockfd reach limit\n", __FILE__, __FUNCTION__, __LINE__);
+            }
+            else {
+                LOG_ERROR("%s:%s:%d accept error: %s\n", __FILE__, __FUNCTION__, __LINE__, strerror(errno));
+            }
+            break;
         }
     }
 }

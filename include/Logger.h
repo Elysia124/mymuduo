@@ -36,7 +36,7 @@
         exit(-1);                                                  \
     } while (0)
 
-#ifdef DUBUG_ON
+#ifdef DEBUG_ON
 #    define LOG_DEBUG(logmsgFormat, ...)                              \
         do {                                                          \
             mymuduo::Logger& logger = mymuduo::Logger::getInstance(); \

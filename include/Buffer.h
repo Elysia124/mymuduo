@@ -41,10 +41,11 @@ public:
 
     void retrieveAll() { readerIndex_ = writerIndex_ = kCheapPrepend; }
 
-    std::string retrieveAllAsString() { return retrieveAsAsString(readableBytes()); };
+    std::string retrieveAllAsString() { return retrieveAsString(readableBytes()); };
 
-    std::string retrieveAsAsString(size_t len)
+    std::string retrieveAsString(size_t len)
     {
+        len = std::min(len, readableBytes());
         std::string result(peek(), len);
         retrieve(len);
         return result;

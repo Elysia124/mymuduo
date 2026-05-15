@@ -22,7 +22,7 @@ public:
     void listen();
 
 private:
-    void handelRead();
+    void handleRead();
 
     EventLoop* loop_;   // Acceptor uses baseloop(mianloop)
     Socket acceptSocket_;
