@@ -3,9 +3,9 @@
 
 namespace mymuduo {
 
-void defaultConnectionCallback(const TcpConnectionPtr& conn) {}
+void defaultConnectionCallback(const TcpConnectionPtr& ) {}
 
-void defaultMessageCallback(const TcpConnectionPtr& conn, Buffer* buffer, Timestamp receiveTime)
+void defaultMessageCallback(const TcpConnectionPtr&, Buffer* buffer, Timestamp)
 {
     buffer->retrieveAll();
 }

@@ -105,9 +105,9 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     ioLoop->runInLoop([conn] { conn->connectEstablished(); });
 }
 
-void TcpServer::removeConnection(const TcpConnectionPtr& conn)
+void TcpServer::removeConnection(TcpConnectionPtr conn)
 {
-    loop_->runInLoop([this, conn] { removeConnectionInLoop(conn); });
+    loop_->runInLoop([this, conn] { removeConnectionInLoop(std::move(conn)); });
 }
 
 void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn)

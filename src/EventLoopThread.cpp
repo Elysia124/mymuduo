@@ -14,14 +14,11 @@ EventLoopThread::~EventLoopThread()
 {
     exiting_ = true;
 
-    EventLoop* loop = nullptr;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        loop = loop_;
-    }
-
-    if (loop != nullptr) {
-        loop->quit();
+        if (loop_ != nullptr) {
+            loop_->quit();
+        }
     }
 
     if (thread_.joinable()) {
