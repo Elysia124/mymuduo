@@ -32,15 +32,28 @@ void Thread::start()
         LOG_FATAL("sem_init error\n");
     }
 
-    thread_ = std::thread([&]() {
-        tid_ = CurrentThread::tid();
+    // 初始化捕获：
+    // 1. tid = &tid_：保存 Thread::tid_ 的地址，子线程启动后写入真实 tid
+    // 2. &sem：引用捕获局部信号量，用于通知 start()：tid_ 已经设置好了
+    // 3. func = std::move(func_)：把成员 func_ 移动到线程函数自己的闭包对象里
+    // 这样子线程执行用户回调时，调用的是 lambda 自己持有的 func，
+    // 而不是 this->func_，可以减少对子线程期间 Thread 对象本身的依赖。
+    thread_ = std::thread([tid = &tid_, &sem, func = std::move(func_)]() mutable {
+        *tid = CurrentThread::tid();
+
+        // 通知 start()：tid_ 已经写好了，可以继续往下走
         sem_post(&sem);   // +1
-        func_();
+
+        // 执行用户传入的线程函数
+        func();
     });
 
     // 确保能够获取到线程的 tid_
-    if (sem_wait(&sem) != 0) {
-        LOG_FATAL("sem_wait error\n");
+    // sem_wait 可能被信号中断，errno == EINTR 时应该继续等待
+    while (sem_wait(&sem) != 0) {
+        if (errno != EINTR) {
+            LOG_FATAL("sem_wait error\n");
+        }
     }
 
     sem_destroy(&sem);
