@@ -19,7 +19,7 @@ Socket::~Socket()
 void Socket::bindAddress(const InetAddress& localaddr)
 {
     if (::bind(sockfd_,
-               reinterpret_cast<sockaddr*>(const_cast<sockaddr_in*>(localaddr.getSockAddr())),
+               reinterpret_cast<const sockaddr*>(localaddr.getSockAddr()),
                sizeof(sockaddr_in)) < 0) {
         LOG_FATAL("bind sockfd %d fail\n", sockfd_);
     }

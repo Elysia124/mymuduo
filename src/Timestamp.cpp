@@ -1,4 +1,5 @@
 #include "Timestamp.h"
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <ctime>
@@ -8,9 +9,12 @@ Timestamp::Timestamp() : microSecondsSinceEpoch_(0) {}
 
 Timestamp::Timestamp(int64_t microSecondsSinceEpoch) : microSecondsSinceEpoch_(microSecondsSinceEpoch) {}
 
-Timestamp now()
+Timestamp Timestamp::now()
 {
-    return Timestamp(time(nullptr));
+    using namespace std::chrono;
+    auto now = system_clock::now().time_since_epoch();
+    auto us = duration_cast<microseconds>(now).count();
+    return Timestamp(us);
 }
 
 std::string Timestamp::toString() const

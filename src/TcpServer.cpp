@@ -6,6 +6,7 @@
 #include "Logger.h"
 #include "TcpConnection.h"
 #include <cstdio>
+#include <memory>
 #include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
@@ -21,14 +22,15 @@ EventLoop* checkNotNull(EventLoop* loop)
     }
     return loop;
 }
+
 }   // namespace
 
 TcpServer::TcpServer(EventLoop* loop, const InetAddress& listenAddr, const std::string& nameArg, Option option)
     : loop_(checkNotNull(loop))
     , ipPort_(listenAddr.toIpPort())
     , name_(nameArg)
-    , acceptor_(new Acceptor(loop, listenAddr, option == KReusePort))
-    , thread_pool_(new EventLoopThreadPool(loop, nameArg))
+    , acceptor_(std::make_unique<Acceptor>(loop, listenAddr, option == KReusePort))
+    , thread_pool_(std::make_unique<EventLoopThreadPool>(loop, nameArg))
     , connectionCallback_(defaultConnectionCallback)
     , messageCallback_(defaultMessageCallback)
     , started_(0)
@@ -73,7 +75,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
 {
     auto* ioLoop = thread_pool_->getNextLoop();
     char buf[64];
-    snprintf(buf, sizeof(buf), "-%s#%d", ipPort_.c_str(), nextConnId_);
+    snprintf(buf, sizeof(buf), "-%s#%d", ipPort_.c_str(), ++nextConnId_);
     std::string connName = name_ + buf;
 
     LOG_INFO("TcpServer::newConnection [%s] - new connection [%s] from %s",
@@ -91,8 +93,8 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     InetAddress localAddr(local);
 
     // 创建 TcpConnection 对象
-    TcpConnectionPtr conn(new TcpConnection(ioLoop, connName, sockfd, localAddr, peerAddr));
-    connections_[connName] = conn;
+    TcpConnectionPtr conn(std::make_shared<TcpConnection>(ioLoop, connName, sockfd, localAddr, peerAddr));
+    connections_.emplace(connName, conn);
 
     // 用户设置给 TcpServer 的回调
     conn->setConnectionCallback(connectionCallback_);

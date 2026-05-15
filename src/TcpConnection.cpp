@@ -9,6 +9,7 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
+#include <memory>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -28,10 +29,10 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string nameArg, int sockfd, c
                              const InetAddress& peerAddr)
     : loop_(checkNotNull(loop))
     , name_(std::move(nameArg))
-    , state_(kConnecting)
+    , state_(StateE::kConnecting)
     , reading_(true)
-    , socket_(new Socket(sockfd))
-    , channel_(new Channel(loop, sockfd))
+    , socket_(std::make_unique<Socket>(sockfd))
+    , channel_(std::make_unique<Channel>(loop, sockfd))
     , localAddr_(localAddr)
     , peerAddr_(peerAddr)
     , highWaterMark_(64 * 1024 * 1024)
@@ -85,7 +86,7 @@ void TcpConnection::handleWrite()
                     auto self = shared_from_this();
                     loop_->queueInLoop([self] { self->writeCompleteCallback_(self); });
                 }
-                if (state_.load() == kDisconnecting) {
+                if (state_.load() == StateE::kDisconnecting) {
                     shutdownInLoop();
                 }
             }
@@ -102,7 +103,7 @@ void TcpConnection::handleWrite()
 void TcpConnection::handleClose()
 {
     LOG_INFO("TcpConnection::handleClose fd = %d state = %d\n", channel_->fd(), state_.load());
-    setState(kDisconnected);
+    setState(StateE::kDisconnected);
     channel_->disableAll();
 
     TcpConnectionPtr guardThis(shared_from_this());
@@ -127,7 +128,7 @@ void TcpConnection::handleError()
 
 void TcpConnection::send(const std::string& buf)
 {
-    if (state_.load() == kconnected) {
+    if (state_.load() == StateE::kconnected) {
         if (loop_->isInLoopThread()) {
             sendInLoop(buf.c_str(), buf.size());
         }
@@ -147,7 +148,7 @@ void TcpConnection::sendInLoop(const void* message, size_t len)
     size_t remaining = len;
     bool faultError = false;
 
-    if (state_.load() == kDisconnected) {
+    if (state_.load() == StateE::kDisconnected) {
         LOG_ERROR("TcpConnection::sendInLoop disconnected, give up writing\n");
         return;
     }
@@ -192,7 +193,7 @@ void TcpConnection::sendInLoop(const void* message, size_t len)
 // 连接建立
 void TcpConnection::connectEstablished()
 {
-    setState(kconnected);
+    setState(StateE::kconnected);
     channel_->tie(shared_from_this());
     channel_->enableReading();
 
@@ -202,8 +203,8 @@ void TcpConnection::connectEstablished()
 // 连接关闭
 void TcpConnection::connectDestroy()
 {
-    if (state_.load() == kconnected) {
-        setState(kDisconnected);
+    if (state_.load() == StateE::kconnected) {
+        setState(StateE::kDisconnected);
         channel_->disableAll();
 
         connectionCallback_(shared_from_this());
@@ -214,8 +215,8 @@ void TcpConnection::connectDestroy()
 
 void TcpConnection::shutdown()
 {
-    if (state_.load() == kconnected) {
-        setState(kDisconnecting);
+    if (state_.load() == StateE::kconnected) {
+        setState(StateE::kDisconnecting);
         auto self = shared_from_this();
         loop_->runInLoop([self] { self->shutdownInLoop(); });
     }

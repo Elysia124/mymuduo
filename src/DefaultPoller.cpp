@@ -4,12 +4,12 @@
 
 using namespace mymuduo;
 
-Poller* Poller::newDefaultPoller(EventLoop* loop)
+std::unique_ptr<Poller> Poller::newDefaultPoller(EventLoop* loop)
 {
     if (::getenv("MODUO_USE_POLL")) {   // not use
         return nullptr;
     }
     else {
-        return new EPollPoller(loop);
+         return std::make_unique<EPollPoller>(loop);
     }
 }

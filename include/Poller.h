@@ -5,6 +5,7 @@
 
 #include "Timestamp.h"
 #include "noncopyable.h"
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -28,7 +29,7 @@ public:
     virtual bool hasChannel(Channel* channel) const;
 
     // 获取 EventLoop 的默认 Poller 对象
-    static Poller* newDefaultPoller(EventLoop* loop);
+    static std::unique_ptr<Poller> newDefaultPoller(EventLoop* loop);
 
 protected:
     // key = sockfd, value = sockfd 所属的 channel

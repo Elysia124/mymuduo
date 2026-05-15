@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstring>
 #include <fcntl.h>
+#include <memory>
 #include <mutex>
 #include <sys/eventfd.h>
 #include <sys/types.h>
@@ -43,7 +44,7 @@ EventLoop::EventLoop()
     , threadId_(CurrentThread::tid())
     , poller_(Poller::newDefaultPoller(this))
     , wakeupFd_(createEventfd())
-    , wakeupChannel_(new Channel(this, wakeupFd_))
+    , wakeupChannel_(std::make_unique<Channel>(this, wakeupFd_))
     , currentActiveChannel_(nullptr)
 {
     LOG_DEBUG("EvetnLoop created %p in this thread %d\n", this, threadId_);
@@ -118,7 +119,7 @@ void EventLoop::runInLoop(Functor cb)
         cb();
     }
     else {
-        queueInLoop(cb);
+        queueInLoop(std::move(cb));
     }
 }
 

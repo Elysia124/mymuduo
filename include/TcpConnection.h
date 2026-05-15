@@ -27,7 +27,7 @@ public:
     const std::string& name() const { return name_; }
     const InetAddress& localAdderss() const { return localAddr_; }
     const InetAddress& peerAdderss() const { return peerAddr_; }
-    bool connected() const { return state_ == kconnected; }
+    bool connected() const { return state_ == StateE::kconnected; }
 
     void send(const std::string& buf);
     void shutdown();
@@ -44,7 +44,7 @@ public:
 
 
 private:
-    enum StateE
+    enum class StateE
     {
         kDisconnected,
         kConnecting,

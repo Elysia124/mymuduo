@@ -21,8 +21,9 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb)
     for (int i = 0; i < numThreads_; ++i) {
         std::string threadName = name_ + std::to_string(i);
         auto t = std::make_unique<EventLoopThread>(cb, threadName);
+        EventLoop* loop = t->startLoop();   // 创建一个新线程执行 eventloop
         threads_.push_back(std::move(t));
-        loops_.push_back(t->startLoop());   // 创建一个新线程执行 eventloop 并将该 loop 加入到 loops 中
+        loops_.push_back(loop);   // 将该 loop 加入到 loops 中
     }
 
     if (numThreads_ == 0 && cb) {
