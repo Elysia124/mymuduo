@@ -1,6 +1,7 @@
 #include "EventLoopThreadPool.h"
 #include "EventLoop.h"
 #include "EventLoopThread.h"
+#include <algorithm>
 #include <cstdio>
 #include <memory>
 
@@ -18,10 +19,9 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb)
     started_ = true;
 
     for (int i = 0; i < numThreads_; ++i) {
-        char buf[name_.size() + 32];
-        snprintf(buf, sizeof(buf), "%s%d", name_.c_str(), i);
-        auto* t = new EventLoopThread(cb, buf);
-        threads_.push_back(std::unique_ptr<EventLoopThread>(t));
+        std::string threadName = name_ + std::to_string(i);
+        auto t = std::make_unique<EventLoopThread>(cb, threadName);
+        threads_.push_back(std::move(t));
         loops_.push_back(t->startLoop());   // 创建一个新线程执行 eventloop 并将该 loop 加入到 loops 中
     }
 

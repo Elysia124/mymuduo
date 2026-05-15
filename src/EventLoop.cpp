@@ -49,14 +49,14 @@ EventLoop::EventLoop()
     LOG_DEBUG("EvetnLoop created %p in this thread %d\n", this, threadId_);
 
     if (t_loopInThisThread != nullptr) {
-        LOG_FATAL("Another EventLoop %p exits int this thread %d\n", t_loopInThisThread, threadId_);
+        LOG_FATAL("Another EventLoop %p exits int this thread %d\n", static_cast<void*>(t_loopInThisThread), threadId_);
     }
     else {
         t_loopInThisThread = this;
     }
 
     // 设置wakeupfd的时间类型及发生事件后的回调操作
-    wakeupChannel_->setReadCallback([this](Timestamp ts) { handleRead(); });
+    wakeupChannel_->setReadCallback([this](Timestamp) { handleRead(); });
 
     // 每个 eventloop 监听 wakeupfd 的读事件
     wakeupChannel_->enableReading();
@@ -87,7 +87,7 @@ void EventLoop::loop()
     looping_ = true;
     quit_ = false;
 
-    LOG_INFO("EventLoop %p start looping\n", this);
+    LOG_INFO("EventLoop %p start looping\n", static_cast<void*>(this));
 
     while (!quit_) {
         activeChannels_.clear();
@@ -99,7 +99,7 @@ void EventLoop::loop()
         doPendingFunctors();
     }
 
-    LOG_INFO("EventLoop %p stop looping\n", this);
+    LOG_INFO("EventLoop %p stop looping\n", static_cast<void*>(this));
     looping_ = false;
 }
 

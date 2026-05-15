@@ -2,11 +2,12 @@
 #include "EventLoop.h"
 #include "Thread.h"
 #include <mutex>
+#include <utility>
 
 using namespace mymuduo;
 
-EventLoopThread::EventLoopThread(const ThreadInitCallback& cb, const std::string& name)
-    : loop_(nullptr), exiting_(false), thread_([this]() { threadFunc(); }), callback_(cb)
+EventLoopThread::EventLoopThread(ThreadInitCallback cb, const std::string& name)
+    : loop_(nullptr), exiting_(false), thread_([this]() { threadFunc(); }, name), callback_(std::move(cb))
 {}
 
 EventLoopThread::~EventLoopThread()
