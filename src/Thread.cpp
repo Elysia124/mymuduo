@@ -1,5 +1,6 @@
 #include "Thread.h"
 #include "CurrentThread.h"
+#include "Logger.h"
 #include <cassert>
 #include <cstdio>
 #include <semaphore.h>
@@ -27,7 +28,9 @@ void Thread::start()
     started_ = true;
 
     sem_t sem;   // 信号量
-    sem_init(&sem, 0, 0);
+    if (sem_init(&sem, 0, 0) != 0) {
+        LOG_FATAL("sem_init error\n");
+    }
 
     thread_ = std::thread([&]() {
         tid_ = CurrentThread::tid();
@@ -36,7 +39,9 @@ void Thread::start()
     });
 
     // 确保能够获取到线程的 tid_
-    sem_wait(&sem);
+    if (sem_wait(&sem) != 0) {
+        LOG_FATAL("sem_wait error\n");
+    }
 
     sem_destroy(&sem);
 }
