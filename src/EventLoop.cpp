@@ -147,11 +147,13 @@ void EventLoop::wakeup() const
 
 void EventLoop::updateChannel(Channel* channel)
 {
+    assertInLoopThread();
     poller_->updateChannel(channel);
 }
 
 void EventLoop::removeChannel(Channel* channel)
 {
+    assertInLoopThread();
     poller_->removeChannel(channel);
 }
 

@@ -136,7 +136,7 @@ void TcpConnection::send(const std::string& buf)
             std::string msg = buf;
 
             // runInLoop会判断是否在自己所属的线程
-            loop_->runInLoop([&, msg = std::move(msg), self]() { sendInLoop(buf.c_str(), buf.size()); });
+            loop_->runInLoop([self, msg = std::move(msg)]() { self->sendInLoop(msg.c_str(), msg.size()); });
         }
     }
 }
@@ -178,7 +178,7 @@ void TcpConnection::sendInLoop(const void* message, size_t len)
         size_t oldLen = outputBuffer_.readableBytes();
         if (oldLen + remaining >= highWaterMark_ && oldLen < highWaterMark_ && highWaterMarkCallback_) {
             auto self = shared_from_this();
-            loop_->queueInLoop([&, len = oldLen + remaining, self] { self->highWaterMarkCallback_(self, len); });
+            loop_->queueInLoop([self, len = oldLen + remaining] { self->highWaterMarkCallback_(self, len); });
         }
 
         outputBuffer_.append(static_cast<const char*>(message) + nwrote, remaining);
@@ -216,7 +216,8 @@ void TcpConnection::shutdown()
 {
     if (state_.load() == kconnected) {
         setState(kDisconnecting);
-        loop_->runInLoop([this] { shutdownInLoop(); });
+        auto self = shared_from_this();
+        loop_->runInLoop([self] { self->shutdownInLoop(); });
     }
 }
 

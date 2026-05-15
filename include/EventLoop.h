@@ -3,6 +3,7 @@
 #include "CurrentThread.h"
 #include "Poller.h"
 #include "Timestamp.h"
+#include "Logger.h"
 #include "noncopyable.h"
 #include <atomic>
 #include <functional>
@@ -59,6 +60,14 @@ public:
 private:
     void handleRead() const;    // wake up
     void doPendingFunctors();   // 执行回调
+
+    void assertInLoopThread() const
+{
+    if (!isInLoopThread()) {
+        LOG_FATAL("EventLoop was created in thread %d, current thread %d\n",
+                  threadId_, CurrentThread::tid());
+    }
+}
 
     using ChannelList = std::vector<Channel*>;
 
