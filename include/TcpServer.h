@@ -1,10 +1,7 @@
 #pragma once
 
-#include "Acceptor.h"
 #include "Buffer.h"
 #include "Callbacks.h"
-#include "EventLoop.h"
-#include "EventLoopThreadPool.h"
 #include "InetAddress.h"
 #include "TcpConnection.h"
 #include "noncopyable.h"
@@ -16,6 +13,10 @@
 #include <utility>
 
 namespace mymuduo {
+class EventLoop;
+class Acceptor;
+class EventLoopThreadPool;
+
 class TcpServer : noncopyable
 {
 public:
