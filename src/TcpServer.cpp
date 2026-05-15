@@ -101,11 +101,11 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     conn->setConnectionCallback(connectionCallback_);
     conn->setMessageCallback(messageCallback_);
     conn->setWriteCompleteCallback(writeCompleteCallback_);
-    conn->setCloseCallback([this](const TcpConnectionPtr& conn) { removeConnecttion(conn); });
+    conn->setCloseCallback([this](const TcpConnectionPtr& conn) { removeConnection(conn); });
     ioLoop->runInLoop([conn] { conn->connectEstablished(); });
 }
 
-void TcpServer::removeConnecttion(const TcpConnectionPtr& conn)
+void TcpServer::removeConnection(const TcpConnectionPtr& conn)
 {
     loop_->runInLoop([this, conn] { removeConnectionInLoop(conn); });
 }

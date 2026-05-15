@@ -16,7 +16,7 @@ Socket::~Socket()
     ::close(sockfd_);
 }
 
-void Socket::bindAddress(const InetAddress& localaddr)
+void Socket::bindAddress(const InetAddress& localaddr) const
 {
     if (::bind(sockfd_,
                reinterpret_cast<const sockaddr*>(localaddr.getSockAddr()),

@@ -22,7 +22,7 @@ int createNonblockingOrDie()
 }   // namespace
 
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& listenAddr, bool reuseport)
-    : loop_(loop), acceptSocket_(createNonblockingOrDie()), acceptChannel_(loop, acceptSocket_.fd()), listenning_(false)
+    : loop_(loop), acceptSocket_(createNonblockingOrDie()), acceptChannel_(loop, acceptSocket_.fd()), listening_(false)
 {
     acceptSocket_.setReuseAddr(true);
     acceptSocket_.setReusePort(reuseport);
@@ -38,7 +38,7 @@ Acceptor::~Acceptor()
 
 void Acceptor::listen()
 {
-    listenning_ = true;
+    listening_ = true;
     acceptSocket_.listen();
     acceptChannel_.enableReading();
 }

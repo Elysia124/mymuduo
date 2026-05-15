@@ -18,7 +18,7 @@ public:
 
     void setNewConnectionCallback(NewConnectionCallback cb) { newConnectionCallback_ = std::move(cb); }
 
-    bool listenning() const { return listenning_; }
+    bool listenning() const { return listening_; }
     void listen();
 
 private:
@@ -28,6 +28,6 @@ private:
     Socket acceptSocket_;
     Channel acceptChannel_;
     NewConnectionCallback newConnectionCallback_;
-    bool listenning_;
+    bool listening_;
 };
 }   // namespace mymuduo

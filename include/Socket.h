@@ -8,11 +8,11 @@ class InetAddress;
 class Socket : noncopyable
 {
 public:
-    explicit Socket(int sockfd) : sockfd_(sockfd){}
+    explicit Socket(int sockfd) : sockfd_(sockfd) {}
     ~Socket();
 
     int fd() const { return sockfd_; }
-    void bindAddress(const InetAddress& localaddr);
+    void bindAddress(const InetAddress& localaddr) const;
     void listen() const;
     int accept(InetAddress* peeraddr) const;
     void shutdownWrite() const;

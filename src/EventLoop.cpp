@@ -173,7 +173,7 @@ void EventLoop::doPendingFunctors()
         functors.swap(pendingFunctors_);
     }
 
-    for (const auto& functor : functors) { functor(); }
+    for (auto& functor : functors) { functor(); }
 
     callingPendingFunctors_ = false;
 }
