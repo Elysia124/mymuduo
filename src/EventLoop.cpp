@@ -47,7 +47,7 @@ EventLoop::EventLoop()
     , wakeupChannel_(std::make_unique<Channel>(this, wakeupFd_))
     , currentActiveChannel_(nullptr)
 {
-    LOG_DEBUG("EvetnLoop created %p in this thread %d\n", this, threadId_);
+    LOG_DEBUG("EvetnLoop created %p in this thread %d\n", static_cast<void*>(this), threadId_);
 
     if (t_loopInThisThread != nullptr) {
         LOG_FATAL("Another EventLoop %p exits int this thread %d\n", static_cast<void*>(t_loopInThisThread), threadId_);

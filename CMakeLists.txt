@@ -47,6 +47,19 @@ set_target_properties(mymuduo PROPERTIES
     OUTPUT_NAME mymuduo
 )
 
+option(MYMUDUO_DEBUG_LOG "Enable mymuduo debug log" OFF)
+
+target_compile_definitions(mymuduo
+    PRIVATE
+        $<$<BOOL:${MYMUDUO_DEBUG_LOG}>:DEBUG_ON>
+)
+
+option(MYMUDUO_BUILD_EXAMPLES "Build mymuduo examples" ON)
+
+if(MYMUDUO_BUILD_EXAMPLES)
+    add_subdirectory(example EXCLUDE_FROM_ALL)
+endif()
+
 install(TARGETS mymuduo
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib

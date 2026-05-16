@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <string>
 #include <sys/epoll.h>
 namespace mymuduo {
 class EventLoop;
@@ -36,6 +37,8 @@ public:
 
     int fd() const { return fd_; }
     uint32_t events() const { return events_; }
+    std::string eventsToString() const;
+    std::string reventsToString() const;
     void setRevents(uint32_t revt) { revents_ = revt; }
 
     // 设置 fd 相应的事件状态

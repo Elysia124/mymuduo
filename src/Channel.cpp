@@ -47,7 +47,7 @@ void Channel::handleEvent(Timestamp receiveTime)
 
 void Channel::handleEventWithGuard(Timestamp receiveTime)
 {
-    LOG_INFO("channel handleEvent revents:%d\n", revents_);
+    LOG_INFO("channel handleEvent revents:%s\n", reventsToString().c_str());
 
     if (static_cast<bool>(revents_ & EPOLLHUP) && !static_cast<bool>(revents_ & EPOLLIN)) {
         if (closeCallback_) {
@@ -72,4 +72,28 @@ void Channel::handleEventWithGuard(Timestamp receiveTime)
             writeCallback_();
         }
     }
+}
+
+std::string Channel::eventsToString() const
+{
+    switch (events_) {
+    case kNoneEvent: return "NoneEvent";
+    case kReadEvent: return "ReadEvent";
+    case kWriteEvent: return "WriteEvent";
+    }
+
+    return "";
+}
+
+std::string Channel::reventsToString() const
+{
+    switch (revents_) {
+    case EPOLLHUP: return "EPOLLHUP";
+    case EPOLLERR: return "EPOLLERR";
+    case EPOLLIN: return "EPOLLIN";
+    case EPOLLOUT: return "EPOLLOUT";
+    case EPOLLIN | EPOLLPRI: return "EPOLLIN | EPOLLPRI";
+    }
+
+    return "";
 }

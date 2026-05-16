@@ -53,6 +53,7 @@ CMakeUserPresets.json
 build/
 out/
 bin/
+install/
 
 # External projects
 *-prefix/
