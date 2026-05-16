@@ -9,47 +9,41 @@
 #include <string_view>
 
 // LOG_INFO("%s %d", arg1, arg2)
-#define LOG_INFO(logmsgFormat, ...)                               \
-    do {                                                          \
-        mymuduo::Logger& logger = mymuduo::Logger::getInstance(); \
-        logger.setLogLevel(mymuduo::INFO);                        \
-        char buf[1024]{};                                         \
-        snprintf(buf, 1024, logmsgFormat, ##__VA_ARGS__);         \
-        logger.log(buf);                                          \
+#define LOG_INFO(...)                                 \
+    do {                                              \
+        char buf[1024];                               \
+        std::snprintf(buf, sizeof(buf), __VA_ARGS__); \
+        Logger::getInstance().setLogLevel(INFO);      \
+        Logger::getInstance().log(buf);               \
     } while (0)
 
-#define LOG_ERROR(logmsgFormat, ...)                              \
-    do {                                                          \
-        mymuduo::Logger& logger = mymuduo::Logger::getInstance(); \
-        logger.setLogLevel(mymuduo::ERROR);                       \
-        char buf[1024]{};                                         \
-        snprintf(buf, 1024, logmsgFormat, ##__VA_ARGS__);         \
-        logger.log(buf);                                          \
+#define LOG_ERROR(...)                                \
+    do {                                              \
+        char buf[1024];                               \
+        std::snprintf(buf, sizeof(buf), __VA_ARGS__); \
+        Logger::getInstance().setLogLevel(ERROR);     \
+        Logger::getInstance().log(buf);               \
     } while (0)
 
-#define LOG_FATAL(logmsgFormat, ...)                              \
-    do {                                                          \
-        mymuduo::Logger& logger = mymuduo::Logger::getInstance(); \
-        logger.setLogLevel(mymuduo::FATAL);                       \
-        char buf[1024]{};                                         \
-        snprintf(buf, 1024, logmsgFormat, ##__VA_ARGS__);         \
-        logger.log(buf);                                          \
-        exit(-1);                                                 \
+#define LOG_FATAL(...)                                \
+    do {                                              \
+        char buf[1024];                               \
+        std::snprintf(buf, sizeof(buf), __VA_ARGS__); \
+        Logger::getInstance().setLogLevel(FATAL);     \
+        Logger::getInstance().log(buf);               \
+        std::abort();                                 \
     } while (0)
 
 #ifdef DEBUG_ON
-#    define LOG_DEBUG(logmsgFormat, ...)                              \
-        do {                                                          \
-            mymuduo::Logger& logger = mymuduo::Logger::getInstance(); \
-            logger.setLogLevel(mymuduo::DEBUG);                       \
-            char buf[1024]{};                                         \
-            snprintf(buf, 1024, logmsgFormat, ##__VA_ARGS__);         \
-            logger.log(buf);                                          \
+#    define LOG_DEBUG(...)                                \
+        do {                                              \
+            char buf[1024];                               \
+            std::snprintf(buf, sizeof(buf), __VA_ARGS__); \
+            Logger::getInstance().setLogLevel(DEBUG);     \
+            Logger::getInstance().log(buf);               \
         } while (0)
 #else
-#    define LOG_DEBUG(logmsgFormat, ...) \
-        do {                             \
-        } while (0)
+#    define LOG_DEBUG(...)
 #endif
 
 namespace mymuduo {
