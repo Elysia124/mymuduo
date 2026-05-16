@@ -47,7 +47,7 @@ void Channel::handleEvent(Timestamp receiveTime)
 
 void Channel::handleEventWithGuard(Timestamp receiveTime)
 {
-    LOG_INFO("channel handleEvent revents:%s\n", reventsToString().c_str());
+    LOG_DEBUG("channel event fd=%d revents=%s", fd_, reventsToString().c_str());
 
     if (static_cast<bool>(revents_ & EPOLLHUP) && !static_cast<bool>(revents_ & EPOLLIN)) {
         if (closeCallback_) {

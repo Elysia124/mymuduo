@@ -20,7 +20,7 @@ namespace {
 EventLoop* checkNotNull(EventLoop* loop)
 {
     if (loop == nullptr) {
-        LOG_FATAL("%s%s%d Tcpconnection loop is nullptr! \n", __FILE__, __FUNCTION__, __LINE__);
+        LOG_FATAL("TcpConnection loop is nullptr");
     }
     return loop;
 }
@@ -43,13 +43,13 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string nameArg, int sockfd, c
     channel_->setCloseCallback([this] { handleClose(); });
     channel_->setErrorCallback([this] { handleError(); });
 
-    LOG_DEBUG("TcpConnection::ctor[%s] at fd = %d\n", name_.c_str(), sockfd);
+    LOG_DEBUG("TcpConnection created name=%s fd=%d local=%s peer=%s", name_.c_str(), sockfd, localAddr_.toIpPort().c_str(), peerAddr_.toIpPort().c_str());
     socket_->setKeepAlive(true);
 }
 
 TcpConnection::~TcpConnection()
 {
-    LOG_DEBUG("TcpConnection::dtor[%s] at fd = %d state=%d\n", name_.c_str(), channel_->fd(), static_cast<int>(state_.load()));
+    LOG_DEBUG("TcpConnection destroyed name=%s fd=%d state=%d", name_.c_str(), channel_->fd(), static_cast<int>(state_.load()));
 }
 
 void TcpConnection::handleRead(Timestamp receiveTime)
@@ -64,7 +64,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
     }
     else {
         errno = saveErrno;
-        LOG_ERROR("TcpConnection::handleRead\n");
+        LOG_ERROR("read failed name=%s fd=%d errno=%d error=%s", name_.c_str(), channel_->fd(), saveErrno, strerror(saveErrno));
         handleError();
     }
 }
@@ -93,17 +93,17 @@ void TcpConnection::handleWrite()
             }
         }
         else {
-            LOG_ERROR("TcpConnection::handleWrite\n");
+            LOG_ERROR("write failed name=%s fd=%d errno=%d error=%s", name_.c_str(), channel_->fd(), saveErrno, strerror(saveErrno));
         }
     }
     else {   // 当前没有关注可写事件却收到了写回调，通常是状态变化或过期事件导致的。
-        LOG_ERROR("TcpConnection::handleWrite Connection fd = %d is down, no more writing\n", channel_->fd());
+        LOG_ERROR("unexpected write event on non-writing channel name=%s fd=%d state=%d", name_.c_str(), channel_->fd(), static_cast<int>(state_.load()));
     }
 }
 
 void TcpConnection::handleClose()
 {
-    LOG_INFO("TcpConnection::handleClose fd = %d state = %d\n", channel_->fd(), static_cast<int>(state_.load()));
+    LOG_INFO("connection closed name=%s fd=%d state=%d peer=%s", name_.c_str(), channel_->fd(), static_cast<int>(state_.load()), peerAddr_.toIpPort().c_str());
     setState(StateE::kDisconnected);
     channel_->disableAll();
 
@@ -124,7 +124,7 @@ void TcpConnection::handleError()
         saveErrno = optval;
     }
 
-    LOG_ERROR("TcpConnection::handleError name: %s - SO_ERROR = %s", name_.c_str(), strerror(saveErrno));
+    LOG_ERROR("socket error name=%s fd=%d so_error=%d error=%s", name_.c_str(), channel_->fd(), saveErrno, strerror(saveErrno));
 }
 
 void TcpConnection::send(const std::string& buf)
@@ -161,7 +161,7 @@ void TcpConnection::sendInLoop(const void* message, size_t len)
     bool faultError = false;
 
     if (state_.load() == StateE::kDisconnected) {
-        LOG_ERROR("TcpConnection::sendInLoop disconnected, give up writing\n");
+        LOG_ERROR("send ignored because connection is disconnected name=%s fd=%d", name_.c_str(), channel_->fd());
         return;
     }
 
@@ -178,7 +178,7 @@ void TcpConnection::sendInLoop(const void* message, size_t len)
         else {
             nwrote = 0;
             if (errno != EAGAIN) {
-                LOG_ERROR("TcpConnection::sendInLoop\n");
+                LOG_ERROR("write failed while sending name=%s fd=%d errno=%d error=%s", name_.c_str(), channel_->fd(), errno, strerror(errno));
             }
             if (errno == EPIPE || errno == ECONNRESET) {
                 faultError = true;

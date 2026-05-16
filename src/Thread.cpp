@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <cerrno>
+#include <cstring>
 #include <cstdio>
 #include <semaphore.h>
 #include <thread>
@@ -32,7 +33,7 @@ void Thread::start()
 
     sem_t sem;   // 信号量
     if (sem_init(&sem, 0, 0) != 0) {
-        LOG_FATAL("sem_init error\n");
+        LOG_FATAL("sem_init failed: errno=%d error=%s", errno, strerror(errno));
     }
 
     // 初始化捕获：
@@ -46,7 +47,7 @@ void Thread::start()
 
         // 通知 start()：tid_ 已经写好了，可以继续往下走
         if (sem_post(&sem) != 0) {   // +1
-            LOG_FATAL("sem_post error\n");
+            LOG_FATAL("sem_post failed: errno=%d error=%s", errno, strerror(errno));
         }
 
         // 执行用户传入的线程函数
@@ -57,7 +58,7 @@ void Thread::start()
     // sem_wait 可能被信号中断，errno == EINTR 时应该继续等待
     while (sem_wait(&sem) != 0) {   // -1
         if (errno != EINTR) {
-            LOG_FATAL("sem_wait error\n");
+            LOG_FATAL("sem_wait failed: errno=%d error=%s", errno, strerror(errno));
         }
     }
 

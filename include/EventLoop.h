@@ -63,8 +63,7 @@ private:
     void assertInLoopThread() const
 {
     if (!isInLoopThread()) {
-        LOG_FATAL("EventLoop was created in thread %d, current thread %d\n",
-                  threadId_, CurrentThread::tid());
+        LOG_FATAL("EventLoop used from wrong thread: owner_tid=%d current_tid=%d", threadId_, CurrentThread::tid());
     }
 }
 

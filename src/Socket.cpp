@@ -21,14 +21,14 @@ void Socket::bindAddress(const InetAddress& localaddr) const
     if (::bind(sockfd_,
                reinterpret_cast<const sockaddr*>(localaddr.getSockAddr()),
                sizeof(sockaddr_in)) < 0) {
-        LOG_FATAL("bind sockfd %d fail\n", sockfd_);
+        LOG_FATAL("bind failed fd=%d errno=%d error=%s", sockfd_, errno, strerror(errno));
     }
 }
 
 void Socket::listen() const
 {
     if (::listen(sockfd_, SOMAXCONN) < 0) {
-        LOG_FATAL("listen sockfd %d fail\n", sockfd_);
+        LOG_FATAL("listen failed fd=%d errno=%d error=%s", sockfd_, errno, strerror(errno));
     }
 }
 
@@ -49,7 +49,7 @@ int Socket::accept(InetAddress* peeraddr) const
 void Socket::shutdownWrite() const
 {
     if (::shutdown(sockfd_, SHUT_WR) < 0) {
-        LOG_ERROR("shutdownWrite error\n");
+        LOG_ERROR("shutdownWrite failed fd=%d errno=%d error=%s", sockfd_, errno, strerror(errno));
     }
 }
 
