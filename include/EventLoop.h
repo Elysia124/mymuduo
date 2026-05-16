@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CurrentThread.h"
-#include "Timestamp.h"
 #include "Logger.h"
+#include "Timestamp.h"
 #include "noncopyable.h"
 #include <atomic>
 #include <functional>
@@ -56,16 +56,10 @@ public:
     */
     bool isInLoopThread() const { return threadId_ == CurrentThread::tid(); }
 
+    void assertInLoopThread() const;
 private:
     void handleRead() const;    // wake up
     void doPendingFunctors();   // 执行回调
-
-    void assertInLoopThread() const
-{
-    if (!isInLoopThread()) {
-        LOG_FATAL("EventLoop used from wrong thread: owner_tid=%d current_tid=%d", threadId_, CurrentThread::tid());
-    }
-}
 
     using ChannelList = std::vector<Channel*>;
 

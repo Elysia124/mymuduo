@@ -50,7 +50,9 @@ EventLoop::EventLoop()
     LOG_DEBUG("EventLoop created loop=%p owner_tid=%d", static_cast<void*>(this), threadId_);
 
     if (t_loopInThisThread != nullptr) {
-        LOG_FATAL("another EventLoop already exists in this thread: existing_loop=%p tid=%d", static_cast<void*>(t_loopInThisThread), threadId_);
+        LOG_FATAL("another EventLoop already exists in this thread: existing_loop=%p tid=%d",
+                  static_cast<void*>(t_loopInThisThread),
+                  threadId_);
     }
     else {
         t_loopInThisThread = this;
@@ -176,4 +178,11 @@ void EventLoop::doPendingFunctors()
     for (auto& functor : functors) { functor(); }
 
     callingPendingFunctors_ = false;
+}
+
+void EventLoop::assertInLoopThread() const
+{
+    if (!isInLoopThread()) {
+        LOG_FATAL("EventLoop used from wrong thread: owner_tid=%d current_tid=%d", threadId_, CurrentThread::tid());
+    }
 }

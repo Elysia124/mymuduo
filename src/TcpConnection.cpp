@@ -26,6 +26,7 @@ EventLoop* checkNotNull(EventLoop* loop)
 }
 }   // namespace
 
+
 TcpConnection::TcpConnection(EventLoop* loop, std::string nameArg, int sockfd, const InetAddress& localAddr,
                              const InetAddress& peerAddr)
     : loop_(checkNotNull(loop))

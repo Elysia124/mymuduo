@@ -25,7 +25,6 @@ EventLoop* checkNotNull(EventLoop* loop)
     }
     return loop;
 }
-
 }   // namespace
 
 TcpServer::TcpServer(EventLoop* loop, const InetAddress& listenAddr, std::string nameArg, Option option)
