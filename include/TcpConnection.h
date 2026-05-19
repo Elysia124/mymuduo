@@ -41,8 +41,9 @@ public:
 
     void connectEstablished();
 
-    void connectDestroy();
+    void connectDestroyed();
 
+    void forceClose();
 
 private:
     enum class StateE
@@ -61,6 +62,8 @@ private:
 
     void sendInLoop(const void* message, size_t len);
     void shutdownInLoop();
+
+    void forceCloseInLoop();
 
     EventLoop* loop_;   // it's subloop, not baseloop
     const std::string name_;

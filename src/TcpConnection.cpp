@@ -243,7 +243,7 @@ void TcpConnection::connectEstablished()
 }
 
 // 连接关闭
-void TcpConnection::connectDestroy()
+void TcpConnection::connectDestroyed()
 {
     if (state_.load() == StateE::kconnected) {
         setState(StateE::kDisconnected);
@@ -255,12 +255,31 @@ void TcpConnection::connectDestroy()
     channel_->remove();   // 把 channel 从 poller中删除
 }
 
+void TcpConnection::forceClose()
+{
+    StateE expected = state_.load();
+    while (expected == StateE::kconnected || expected == StateE::kDisconnecting) {
+        if (state_.compare_exchange_weak(expected, StateE::kDisconnecting)) {
+            loop_->queueInLoop([self = shared_from_this()] { self->forceCloseInLoop(); });
+            break;
+        }
+    }
+}
+
+void TcpConnection::forceCloseInLoop()
+{
+    loop_->assertInLoopThread();
+    StateE state = state_.load();
+    if (state == StateE::kconnected || state == StateE::kDisconnected) {
+        handleClose();
+    }
+}
+
 void TcpConnection::shutdown()
 {
     if (state_.load() == StateE::kconnected) {
         setState(StateE::kDisconnecting);
-        auto self = shared_from_this();
-        loop_->runInLoop([self] { self->shutdownInLoop(); });
+        loop_->runInLoop([self = shared_from_this()] { self->shutdownInLoop(); });
     }
 }
 
