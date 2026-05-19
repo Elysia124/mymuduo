@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Callbacks.h"
 #include "CurrentThread.h"
-#include "Logger.h"
+#include "TimerId.h"
 #include "Timestamp.h"
 #include "noncopyable.h"
 #include <atomic>
@@ -14,6 +15,7 @@ namespace mymuduo {
 
 class Channel;
 class Poller;
+class TimerQueue;
 
 // 事件循环类 主要包含两个大模块 Channel Poller(Epoll的抽象)
 class EventLoop : noncopyable
@@ -57,6 +59,19 @@ public:
     bool isInLoopThread() const { return threadId_ == CurrentThread::tid(); }
 
     void assertInLoopThread() const;
+
+    // timer
+
+    // run callback at time
+    TimerId runAt(Timestamp time, TimerCallback cb);
+
+    // run callback after delay seconds
+    TimerId runAfter(double delay, TimerCallback cb);
+
+    // run callbakc every interval secondes
+    TimerId runEvery(double interval, TimerCallback cb);
+    void cancle(TimerId timerId);
+
 private:
     void handleRead() const;    // wake up
     void doPendingFunctors();   // 执行回调
@@ -72,6 +87,7 @@ private:
     std::unique_ptr<Poller> poller_;
     int wakeupFd_;
     std::unique_ptr<Channel> wakeupChannel_;
+    std::unique_ptr<TimerQueue> timerQueue_;
 
     ChannelList activeChannels_;
     Channel* currentActiveChannel_;

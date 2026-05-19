@@ -3,6 +3,7 @@
 #include "CurrentThread.h"
 #include "Logger.h"
 #include "Poller.h"
+#include "TimerQueue.h"
 #include "Timestamp.h"
 #include <climits>
 #include <cstdint>
@@ -96,6 +97,7 @@ void EventLoop::loop()
         activeChannels_.clear();
         pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
 
+        // 对有事件的 channel 调用 handleEvent 处理相应的事件
         for (auto* channel : activeChannels_) { channel->handleEvent(pollReturnTime_); }
 
         // 执行当前 eventloop 事件循环需要处理的回调操作
@@ -185,4 +187,26 @@ void EventLoop::assertInLoopThread() const
     if (!isInLoopThread()) {
         LOG_FATAL("EventLoop used from wrong thread: owner_tid=%d current_tid=%d", threadId_, CurrentThread::tid());
     }
+}
+
+TimerId EventLoop::runAt(Timestamp time, TimerCallback cb)
+{
+    return timerQueue_->addTimer(std::move(cb), time, 0.0);
+}
+
+TimerId EventLoop::runAfter(double delay, TimerCallback cb)
+{
+    Timestamp time(addTime(Timestamp::now(), delay));
+    return runAt(time, std::move(cb));
+}
+
+TimerId EventLoop::runEvery(double interval, TimerCallback cb)
+{
+    Timestamp time(addTime(Timestamp::now(), interval));
+    return timerQueue_->addTimer(std::move(cb), time, interval);
+}
+
+void EventLoop::cancle(TimerId timerId)
+{
+    return timerQueue_->cancel(timerId);
 }
