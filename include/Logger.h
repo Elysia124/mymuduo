@@ -32,10 +32,10 @@
     } while (0)
 
 #ifdef DEBUG_ON
-#    define LOG_DEBUG(...)                                                                          \
-        do {                                                                                        \
-            char buf[1024];                                                                         \
-            std::snprintf(buf, sizeof(buf), __VA_ARGS__);                                           \
+#    define LOG_DEBUG(...)                                                                             \
+        do {                                                                                           \
+            char buf[1024];                                                                            \
+            std::snprintf(buf, sizeof(buf), __VA_ARGS__);                                              \
             ::mymuduo::Logger::getInstance().log(::mymuduo::LogLevel::DEBUG, __FILE__, __func__, buf); \
         } while (0)
 #else

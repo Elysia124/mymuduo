@@ -15,10 +15,14 @@ Logger& Logger::getInstance()
 const char* Logger::levelName(LogLevel level)
 {
     switch (level) {
-    case LogLevel::DEBUG: return "DEBUG";
-    case LogLevel::INFO: return "INFO ";
-    case LogLevel::ERROR: return "ERROR";
-    case LogLevel::FATAL: return "FATAL";
+        case LogLevel::DEBUG:
+            return "DEBUG";
+        case LogLevel::INFO:
+            return "INFO ";
+        case LogLevel::ERROR:
+            return "ERROR";
+        case LogLevel::FATAL:
+            return "FATAL";
     }
     return "UNKNOWN";
 }
@@ -46,7 +50,7 @@ std::string_view Logger::trimTrailingNewline(std::string_view msg)
 
 void Logger::log(LogLevel level, const char* file, const char* func, std::string_view msg) const
 {
-    const std::string time = Timestamp::now().toString(true);
+    const std::string time = Timestamp::now().toFormatedString(true);
 
     msg = trimTrailingNewline(msg);
     const char* safeFunc = func == nullptr ? "unknown" : func;
