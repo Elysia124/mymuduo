@@ -1,6 +1,7 @@
 #include "Timestamp.h"
 
 #include <chrono>
+#include <cinttypes>
 #include <cstdint>
 #include <cstdio>
 #include <ctime>
@@ -19,7 +20,12 @@ Timestamp Timestamp::now()
     return Timestamp(us);
 }
 
-std::string Timestamp::toString(bool showMicroseconds) const
+Timestamp Timestamp::invalid()
+{
+    return Timestamp(0);
+}
+
+std::string Timestamp::toFormatedString(bool showMicroseconds) const
 {
     const auto seconds = static_cast<time_t>(microSecondsSinceEpoch_ / kMicroSecondsPerSecond);
 
@@ -55,3 +61,12 @@ std::string Timestamp::toString(bool showMicroseconds) const
     return buf;
 }
 
+std::string Timestamp::toString() const
+{
+    char buf[32]{};
+    int64_t seconds = microSecondsSinceEpoch_ / kMicroSecondsPerSecond;
+    int64_t microSeconds = microSecondsSinceEpoch_ % kMicroSecondsPerSecond;
+
+    std::snprintf(buf, sizeof(buf), "%" PRId64 ".06%" PRId64 " ", seconds, microSeconds);
+    return buf;
+}
