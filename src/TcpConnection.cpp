@@ -37,7 +37,7 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string nameArg, int sockfd, c
     , channel_(std::make_unique<Channel>(loop, sockfd))
     , localAddr_(localAddr)
     , peerAddr_(peerAddr)
-    , highWaterMark_(64 * 1024 * 1024)
+    , highWaterMark_(static_cast<ssize_t>(64 * 1024 * 1024))
 {
     channel_->setReadCallback([this](Timestamp ts) { handleRead(ts); });
     channel_->setWriteCallback([this] { handleWrite(); });
