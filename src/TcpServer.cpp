@@ -6,8 +6,8 @@
 #include "Logger.h"
 #include "TcpConnection.h"
 #include <cerrno>
-#include <cstring>
 #include <cstdio>
+#include <cstring>
 #include <memory>
 #include <netinet/in.h>
 #include <string>
@@ -47,7 +47,7 @@ TcpServer::~TcpServer()
     for (auto& item : connections_) {
         TcpConnectionPtr conn(item.second);
         item.second.reset();
-        conn->getLoop()->runInLoop([conn = std::move(conn)] { conn->connectDestroy(); });
+        conn->getLoop()->runInLoop([conn = std::move(conn)] { conn->connectDestroyed(); });
     }
 }
 
@@ -80,7 +80,11 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     snprintf(buf, sizeof(buf), "-%s#%d", ipPort_.c_str(), nextConnId_++);
     std::string connName = name_ + buf;
 
-    LOG_INFO("new connection server=%s conn=%s fd=%d peer=%s", name_.c_str(), connName.c_str(), sockfd, peerAddr.toIpPort().c_str());
+    LOG_INFO("new connection server=%s conn=%s fd=%d peer=%s",
+             name_.c_str(),
+             connName.c_str(),
+             sockfd,
+             peerAddr.toIpPort().c_str());
 
     // 通过 sockfd 获取其绑定的本机的 ip 地址和端口
     sockaddr_in local;
@@ -114,5 +118,5 @@ void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn)
 
     connections_.erase(conn->name());
     auto* ioLoop = conn->getLoop();
-    ioLoop->queueInLoop([conn] { conn->connectDestroy(); });
+    ioLoop->queueInLoop([conn] { conn->connectDestroyed(); });
 }
