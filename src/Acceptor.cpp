@@ -59,7 +59,7 @@ void Acceptor::handleRead()
             }
         }
         else {
-            if (errno == EAGAIN) {   // no more new connection
+            if (errno == EAGAIN|| errno == EWOULDBLOCK) {   // no more new connection
                 break;
             }
             if (errno == EMFILE) {

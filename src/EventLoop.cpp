@@ -207,7 +207,7 @@ TimerId EventLoop::runEvery(double interval, TimerCallback cb)
     return timerQueue_->addTimer(std::move(cb), time, interval);
 }
 
-void EventLoop::cancle(TimerId timerId)
+void EventLoop::cancel(TimerId timerId)
 {
     return timerQueue_->cancel(timerId);
 }

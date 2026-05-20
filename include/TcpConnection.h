@@ -48,10 +48,10 @@ public:
 private:
     enum class StateE
     {
-        kDisconnected,
+        kdisconnected,
         kConnecting,
         kconnected,
-        kDisconnecting
+        kdisconnecting
     };
 
     void setState(StateE state) { state_.store(state); }

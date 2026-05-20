@@ -3,8 +3,8 @@
 #include "Callbacks.h"
 #include "EventLoop.h"
 #include "InetAddress.h"
-#include "noncopyable.h"
 #include "TcpConnection.h"
+#include "noncopyable.h"
 #include <atomic>
 #include <memory>
 #include <mutex>
@@ -21,7 +21,7 @@ public:
     ~TcpClient();
 
     void connect();
-    void disConnect();
+    void disconnect();
     void stop();
 
     TcpConnectionPtr connection() const

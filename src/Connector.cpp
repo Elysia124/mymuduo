@@ -26,7 +26,7 @@ bool isSelfConnect(int sockfd)
     sockaddr_in peerAddr;
     socklen_t peerAddrlen = sizeof(peerAddr);
     if (::getpeername(sockfd, reinterpret_cast<sockaddr*>(&peerAddr), &peerAddrlen) < 0) {
-        LOG_FATAL << "getsockname fail errno=" << errno << ", error=" << strerror(errno);
+        LOG_FATAL << "getpeername fail errno=" << errno << ", error=" << strerror(errno);
     }
 
     return localAddr.sin_port == peerAddr.sin_port && localAddr.sin_addr.s_addr == peerAddr.sin_addr.s_addr;
@@ -37,7 +37,7 @@ Connector::Connector(EventLoop* loop, const InetAddress& serverAddr)
     : loop_(loop)
     , serverAddr_(serverAddr)
     , connect_(false)
-    , state_(State::kDisconnected)
+    , state_(State::kdisconnected)
     , retryDelayMs_(kInitRetryDelayMs)
 {
     LOG_DEBUG << "Connector created";
@@ -79,7 +79,7 @@ void Connector::stopInLoop()
 {
     loop_->assertInLoopThread();
     if (state_.load(std::memory_order_relaxed) == State::kConnecting) {
-        state_.store(State::kDisconnected, std::memory_order_relaxed);
+        state_.store(State::kdisconnected, std::memory_order_relaxed);
         int sockfd = removeAndResetChannel();
         retry(sockfd);
     }
@@ -132,7 +132,7 @@ void Connector::connect()
 void Connector::restart()
 {
     loop_->assertInLoopThread();
-    setState(State::kDisconnected);
+    setState(State::kdisconnected);
     connect_.store(true, std::memory_order_relaxed);
     startInLoop();
 }
@@ -206,7 +206,7 @@ void Connector::handleError()
 void Connector::retry(int sockfd)
 {
     ::close(sockfd);
-    setState(State::kDisconnected);
+    setState(State::kdisconnected);
     if (connect_.load(std::memory_order_relaxed)) {
         LOG_INFO << "Retry connecting to " << serverAddr_.toIpPort().c_str() << " in " << retryDelayMs_
                  << " milliseconds";

@@ -70,7 +70,7 @@ public:
 
     // run callbakc every interval secondes
     TimerId runEvery(double interval, TimerCallback cb);
-    void cancle(TimerId timerId);
+    void cancel(TimerId timerId);
 
 private:
     void handleRead() const;    // wake up

@@ -29,7 +29,7 @@ public:
 private:
     enum class State
     {
-        kDisconnected,
+        kdisconnected,
         kConnecting,
         kConnected
     };

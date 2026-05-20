@@ -50,12 +50,14 @@ TcpClient::TcpClient(EventLoop* loop, const InetAddress& serverAddr, std::string
     , nextConnId_(1)
 {
     connector_->setNewConnectionCallback([this](int sockfd) { newConnection(sockfd); });
-    LOG_DEBUG << "TcpClient[" << name_.c_str() << "] - connector " << static_cast<void*>(get_pointer(connector_)) << " created";
+    LOG_DEBUG << "TcpClient[" << name_.c_str() << "] - connector " << static_cast<void*>(get_pointer(connector_))
+              << " created";
 }
 
 TcpClient::~TcpClient()
 {
-    LOG_DEBUG << "TcpClient[" << name_.c_str() << "] - connector " << static_cast<void*>(get_pointer(connector_)) << " destroyed";
+    LOG_DEBUG << "TcpClient[" << name_.c_str() << "] - connector " << static_cast<void*>(get_pointer(connector_))
+              << " destroyed";
     TcpConnectionPtr conn;
     bool unique = false;
     {
@@ -81,12 +83,13 @@ TcpClient::~TcpClient()
 
 void TcpClient::connect()
 {
-    LOG_INFO << "TcpClient[" << name_.c_str() << "] is connecting to " << connector_->serverAddress().toIpPort().c_str();
+    LOG_INFO << "TcpClient[" << name_.c_str() << "] is connecting to "
+             << connector_->serverAddress().toIpPort().c_str();
     connect_.store(true, std::memory_order_relaxed);
     connector_->start();
 }
 
-void TcpClient::disConnect()
+void TcpClient::disconnect()
 {
     connect_.store(false, std::memory_order_relaxed);
 
@@ -154,7 +157,8 @@ void TcpClient::removeConnection(const TcpConnectionPtr& conn)
 
     loop_->queueInLoop([conn] { conn->connectDestroyed(); });
     if (retry_ && connect_) {
-        LOG_INFO << "TcpClient[" << name_.c_str() << "] reconnecting to " << connector_->serverAddress().toIpPort().c_str();
+        LOG_INFO << "TcpClient[" << name_.c_str() << "] reconnecting to "
+                 << connector_->serverAddress().toIpPort().c_str();
         connector_->restart();
     }
 }
