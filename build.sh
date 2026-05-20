@@ -20,9 +20,6 @@ for arg in "$@"; do
         debug|Debug)
             BUILD_TYPE=debug
             ;;
-        debug-log|debug_log|DebugLog)
-            DEBUG_LOG=ON
-            ;;
         install)
             DO_INSTALL=1
             ;;
