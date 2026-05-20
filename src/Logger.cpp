@@ -2,10 +2,10 @@
 #include "Timestamp.h"
 
 #include "CurrentThread.h"
+#include <atomic>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <atomic>
 #include <mutex>
 
 namespace mymuduo {
@@ -15,6 +15,8 @@ namespace {
 const char* LogLevelName[Logger::NUM_LOG_LEVELS] = {"TRACE ", "DEBUG ", "INFO", "WARN", "ERROR ", "FATAL"};
 
 std::atomic<Logger::LogLevel> g_logLevel{Logger::INFO};
+
+std::mutex g_mutex_;
 
 void defaultOutput(const char* msg, size_t len)
 {
@@ -63,7 +65,7 @@ Logger::~Logger()
     const LogStream::Buffer& buf = stream_.buffer();
 
     {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::lock_guard<std::mutex> lock(g_mutex_);
         g_output(buf.data(), static_cast<size_t>(buf.length()));
         if (level_ == FATAL) {
             g_flush();

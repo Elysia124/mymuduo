@@ -240,7 +240,7 @@ void TcpConnection::forceCloseInLoop()
 {
     loop_->assertInLoopThread();
     StateE state = state_.load();
-    if (state == StateE::kconnected || state == StateE::kDisconnected) {
+    if (state == StateE::kconnected || state == StateE::kDisconnecting) {
         handleClose();
     }
 }

@@ -32,6 +32,7 @@ private:
         }
         else {
             std::cout << "connection down: " << conn->name() << ", " << conn->peerAddress().toIpPort() << "\n";
+            conn->getLoop()->quit();
         }
     }
     void onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp ts)

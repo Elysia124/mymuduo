@@ -45,7 +45,6 @@ private:
     const char* file_;
     int line_;
 
-    std::mutex mutex_;
 };
 
 }   // namespace mymuduo

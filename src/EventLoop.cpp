@@ -46,12 +46,14 @@ EventLoop::EventLoop()
     , poller_(Poller::newDefaultPoller(this))
     , wakeupFd_(createEventfd())
     , wakeupChannel_(std::make_unique<Channel>(this, wakeupFd_))
+    , timerQueue_(std::make_unique<TimerQueue>(this))
     , currentActiveChannel_(nullptr)
 {
     LOG_DEBUG << "EventLoop created loop=" << static_cast<void*>(this) << " owner_tid=" << threadId_;
 
     if (t_loopInThisThread != nullptr) {
-        LOG_FATAL << "another EventLoop already exists in this thread: existing_loop=" << static_cast<void*>(t_loopInThisThread) << " tid=" << threadId_;
+        LOG_FATAL << "another EventLoop already exists in this thread: existing_loop="
+                  << static_cast<void*>(t_loopInThisThread) << " tid=" << threadId_;
     }
     else {
         t_loopInThisThread = this;
@@ -183,7 +185,8 @@ void EventLoop::doPendingFunctors()
 void EventLoop::assertInLoopThread() const
 {
     if (!isInLoopThread()) {
-        LOG_FATAL << "EventLoop used from wrong thread: owner_tid=" << threadId_ << " current_tid=" << CurrentThread::tid();
+        LOG_FATAL << "EventLoop used from wrong thread: owner_tid=" << threadId_
+                  << " current_tid=" << CurrentThread::tid();
     }
 }
 

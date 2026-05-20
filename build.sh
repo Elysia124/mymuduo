@@ -4,7 +4,6 @@ SOURCE_DIR=$(cd "$(dirname "$0")" && pwd)
 
 # 默认配置
 BUILD_TYPE=release
-DEBUG_LOG=OFF
 DO_INSTALL=0
 CLEAN=0
 TARGET=""

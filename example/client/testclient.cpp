@@ -26,6 +26,7 @@ private:
         }
         else {
             std::cout << "connection down: " << conn->name() << ", " << conn->localAddress().toIpPort() << "\n";
+            conn->getLoop()->quit();
         }
     }
 

@@ -92,7 +92,7 @@ void Connector::connect()
         LOG_FATAL << "connect socket create failed: errno=" << errno << " error=" << strerror(errno);
     }
 
-    int ret = ::connect(sockfd, reinterpret_cast<sockaddr*>(&serverAddr_), sizeof(serverAddr_));
+    int ret = ::connect(sockfd, reinterpret_cast<const sockaddr*>(serverAddr_.getSockAddr()), sizeof(serverAddr_));
     int savedErrno = ret == 0 ? 0 : errno;
 
     switch (savedErrno) {
@@ -166,13 +166,17 @@ void Connector::handleWrite()
 {
     if (state_.load(std::memory_order_relaxed) == State::kConnecting) {
         int sockfd = removeAndResetChannel();
-        int optVal;
-        socklen_t optlen = sizeof(optlen);
+        int optVal = 0;
+        socklen_t optlen = sizeof(optVal);
 
         // sockfd 可读不代表连接成功，需调用 getsockopt 拿到 具体的 SO_ERROR 值来判断
         if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optVal, &optlen) < 0) {
             // getsockopt 本身调用失败
             LOG_ERROR << "getsockopt failed errno=" << errno << ", error: " << strerror(errno);
+            retry(sockfd);
+        }
+        else if (optVal != 0) {
+            LOG_WARN << "connect failed errno=" << optVal << ", error=" << strerror(optVal);
             retry(sockfd);
         }
         else if (isSelfConnect(sockfd)) {   // 自连接
@@ -204,7 +208,8 @@ void Connector::retry(int sockfd)
     ::close(sockfd);
     setState(State::kDisconnected);
     if (connect_.load(std::memory_order_relaxed)) {
-        LOG_INFO << "Retry connecting to " << serverAddr_.toIpPort().c_str() << " in " << retryDelayMs_ << " milliseconds";
+        LOG_INFO << "Retry connecting to " << serverAddr_.toIpPort().c_str() << " in " << retryDelayMs_
+                 << " milliseconds";
         loop_->runAfter(retryDelayMs_ / 1000.0, [self = shared_from_this()] { self->startInLoop(); });
         retryDelayMs_ = std::min(retryDelayMs_ * 2, kMaxRetryDelayMs);
     }

@@ -2,6 +2,7 @@
 #include "EventLoop.h"
 #include "Logger.h"
 #include <memory>
+#include <sstream>
 
 using namespace mymuduo;
 
@@ -76,24 +77,34 @@ void Channel::handleEventWithGuard(Timestamp receiveTime)
 
 std::string Channel::eventsToString() const
 {
+    std::ostringstream oss;
     switch (events_) {
-    case kNoneEvent: return "NoneEvent";
-    case kReadEvent: return "ReadEvent";
-    case kWriteEvent: return "WriteEvent";
+        case kNoneEvent:
+            oss << "NoneEvent";
+        case kReadEvent:
+            oss << "ReadEvent";
+        case kWriteEvent:
+            oss << "WriteEvent";
     }
 
-    return "";
+    return oss.str();
 }
 
 std::string Channel::reventsToString() const
 {
+    std::ostringstream oss;
     switch (revents_) {
-    case EPOLLHUP: return "EPOLLHUP";
-    case EPOLLERR: return "EPOLLERR";
-    case EPOLLIN: return "EPOLLIN";
-    case EPOLLOUT: return "EPOLLOUT";
-    case EPOLLIN | EPOLLPRI: return "EPOLLIN | EPOLLPRI";
+        case EPOLLHUP:
+            oss << "EPOLLHUP";
+        case EPOLLERR:
+            oss << "EPOLLERR";
+        case EPOLLIN:
+            oss << "EPOLLIN";
+        case EPOLLOUT:
+            oss << "EPOLLOUT";
+        case EPOLLIN | EPOLLPRI:
+            oss << "EPOLLIN | EPOLLPRI";
     }
 
-    return "";
+    return oss.str();
 }
