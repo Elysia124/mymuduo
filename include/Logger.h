@@ -1,75 +1,83 @@
 #pragma once
 
+#include "LogStream.h"
 #include "noncopyable.h"
 
-#include <cstdio>
-#include <cstdlib>
+#include <cstddef>
 #include <mutex>
-#include <string_view>
-
-// printf-style logging macros.
-// Example: LOG_INFO("fd=%d peer=%s", fd, peer.c_str());
-#define LOG_INFO(...)                                                                             \
-    do {                                                                                          \
-        char buf[1024];                                                                           \
-        std::snprintf(buf, sizeof(buf), __VA_ARGS__);                                             \
-        ::mymuduo::Logger::getInstance().log(::mymuduo::LogLevel::INFO, __FILE__, __func__, buf); \
-    } while (0)
-
-#define LOG_ERROR(...)                                                                             \
-    do {                                                                                           \
-        char buf[1024];                                                                            \
-        std::snprintf(buf, sizeof(buf), __VA_ARGS__);                                              \
-        ::mymuduo::Logger::getInstance().log(::mymuduo::LogLevel::ERROR, __FILE__, __func__, buf); \
-    } while (0)
-
-#define LOG_FATAL(...)                                                                             \
-    do {                                                                                           \
-        char buf[1024];                                                                            \
-        std::snprintf(buf, sizeof(buf), __VA_ARGS__);                                              \
-        ::mymuduo::Logger::getInstance().log(::mymuduo::LogLevel::FATAL, __FILE__, __func__, buf); \
-        std::abort();                                                                              \
-    } while (0)
-
-#ifdef DEBUG_ON
-#    define LOG_DEBUG(...)                                                                             \
-        do {                                                                                           \
-            char buf[1024];                                                                            \
-            std::snprintf(buf, sizeof(buf), __VA_ARGS__);                                              \
-            ::mymuduo::Logger::getInstance().log(::mymuduo::LogLevel::DEBUG, __FILE__, __func__, buf); \
-        } while (0)
-#else
-#    define LOG_DEBUG(...) \
-        do {               \
-        } while (0)
-#endif
 
 namespace mymuduo {
-
-enum class LogLevel
-{
-    DEBUG,
-    INFO,
-    ERROR,
-    FATAL
-};
 
 class Logger : noncopyable
 {
 public:
-    static Logger& getInstance();
+    enum LogLevel
+    {
+        TRACE,
+        DEBUG,
+        INFO,
+        WARN,
+        ERROR,
+        FATAL,
+        NUM_LOG_LEVELS
+    };
 
-    void log(LogLevel level, const char* file, const char* func, std::string_view msg) const;
+    using OutputFunc = void (*)(const char* msg, size_t len);
+    using FlushFunc = void (*)();
+
+    Logger(const char* file, int line, LogLevel level);
+    ~Logger();
+
+    LogStream& stream() { return stream_; }
+
+    static LogLevel logLevel();
+    static void setLogLevel(LogLevel level);
+
+    static void setOutput(OutputFunc output);
+    static void setFlush(FlushFunc flush);
 
 private:
-    Logger() = default;
-    ~Logger() = default;
+    void formatTime();
+    void finish();
 
-    static const char* levelName(LogLevel level);
-    static const char* basename(const char* path);
-    static std::string_view trimTrailingNewline(std::string_view msg);
+    LogStream stream_;
+    LogLevel level_;
+    const char* file_;
+    int line_;
 
-    mutable std::mutex mutex_;
+    std::mutex mutex_;
 };
 
 }   // namespace mymuduo
+
+#define LOG_TRACE                                             \
+    if (mymuduo::Logger::logLevel() > mymuduo::Logger::TRACE) \
+        ;                                                     \
+    else                                                      \
+        mymuduo::Logger(__FILE__, __LINE__, mymuduo::Logger::TRACE).stream()
+
+#define LOG_DEBUG                                             \
+    if (mymuduo::Logger::logLevel() > mymuduo::Logger::DEBUG) \
+        ;                                                     \
+    else                                                      \
+        mymuduo::Logger(__FILE__, __LINE__, mymuduo::Logger::DEBUG).stream()
+
+#define LOG_INFO                                             \
+    if (mymuduo::Logger::logLevel() > mymuduo::Logger::INFO) \
+        ;                                                    \
+    else                                                     \
+        mymuduo::Logger(__FILE__, __LINE__, mymuduo::Logger::INFO).stream()
+
+#define LOG_WARN                                             \
+    if (mymuduo::Logger::logLevel() > mymuduo::Logger::WARN) \
+        ;                                                    \
+    else                                                     \
+        mymuduo::Logger(__FILE__, __LINE__, mymuduo::Logger::WARN).stream()
+
+#define LOG_ERROR                                             \
+    if (mymuduo::Logger::logLevel() > mymuduo::Logger::ERROR) \
+        ;                                                     \
+    else                                                      \
+        mymuduo::Logger(__FILE__, __LINE__, mymuduo::Logger::ERROR).stream()
+
+#define LOG_FATAL mymuduo::Logger(__FILE__, __LINE__, mymuduo::Logger::FATAL).stream()

@@ -5,7 +5,7 @@ project(mymuduo
     LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -47,17 +47,11 @@ set_target_properties(mymuduo PROPERTIES
     OUTPUT_NAME mymuduo
 )
 
-option(MYMUDUO_DEBUG_LOG "Enable mymuduo debug log" OFF)
-
-target_compile_definitions(mymuduo
-    PRIVATE
-        $<$<BOOL:${MYMUDUO_DEBUG_LOG}>:DEBUG_ON>
-)
-
 option(MYMUDUO_BUILD_EXAMPLES "Build mymuduo examples" ON)
 
 if(MYMUDUO_BUILD_EXAMPLES)
-    add_subdirectory(example EXCLUDE_FROM_ALL)
+    add_subdirectory(example/server EXCLUDE_FROM_ALL)
+    add_subdirectory(example/client EXCLUDE_FROM_ALL)
 endif()
 
 install(TARGETS mymuduo

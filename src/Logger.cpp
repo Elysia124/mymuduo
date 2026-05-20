@@ -1,70 +1,112 @@
 #include "Logger.h"
-#include "CurrentThread.h"
 #include "Timestamp.h"
 
+#include "CurrentThread.h"
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <atomic>
+#include <mutex>
 
-using namespace mymuduo;
+namespace mymuduo {
 
-Logger& Logger::getInstance()
+namespace {
+
+const char* LogLevelName[Logger::NUM_LOG_LEVELS] = {"TRACE ", "DEBUG ", "INFO", "WARN", "ERROR ", "FATAL"};
+
+std::atomic<Logger::LogLevel> g_logLevel{Logger::INFO};
+
+void defaultOutput(const char* msg, size_t len)
 {
-    static Logger logger;
-    return logger;
+    std::fwrite(msg, 1, len, stdout);
 }
 
-const char* Logger::levelName(LogLevel level)
+void defaultFlush()
 {
-    switch (level) {
-        case LogLevel::DEBUG:
-            return "DEBUG";
-        case LogLevel::INFO:
-            return "INFO ";
-        case LogLevel::ERROR:
-            return "ERROR";
-        case LogLevel::FATAL:
-            return "FATAL";
-    }
-    return "UNKNOWN";
+    std::fflush(stdout);
 }
 
-const char* Logger::basename(const char* path)
-{
-    if (path == nullptr) {
-        return "unknown";
-    }
+Logger::OutputFunc g_output = defaultOutput;
+Logger::FlushFunc g_flush = defaultFlush;
 
-    const char* base = path;
-    for (const char* p = path; *p != '\0'; ++p) {
-        if (*p == '/' || *p == '\\') {
-            base = p + 1;
+const char* basename(const char* file)
+{
+    const char* slash = std::strrchr(file, '/');
+
+#ifdef _WIN32
+    const char* backslash = std::strrchr(file, '\\');
+    if (!slash || backslash > slash) {
+        slash = backslash;
+    }
+#endif
+
+    return slash ? slash + 1 : file;
+}
+
+}   // namespace
+
+Logger::Logger(const char* file, int line, LogLevel level) : level_(level), file_(basename(file)), line_(line)
+{
+    stream_ << '[' << LogLevelName[level_] << ']';
+
+    formatTime();
+
+    auto tid = CurrentThread::tid();
+
+    stream_ << "tid=" << tid << " ";
+}
+
+Logger::~Logger()
+{
+    finish();
+
+    const LogStream::Buffer& buf = stream_.buffer();
+
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        g_output(buf.data(), static_cast<size_t>(buf.length()));
+        if (level_ == FATAL) {
+            g_flush();
         }
     }
-    return base;
+
+    if (level_ == FATAL) {
+        std::abort();
+    }
 }
 
-std::string_view Logger::trimTrailingNewline(std::string_view msg)
+void Logger::formatTime()
 {
-    while (!msg.empty() && (msg.back() == '\n' || msg.back() == '\r')) { msg.remove_suffix(1); }
-    return msg;
+    Timestamp now = Timestamp::now();
+
+    // Timestamp::toFormatedString(true)
+    // Example: 2026-05-16 09:08:58.313460
+    stream_ << now.toFormatedString(true) << " ";
 }
 
-void Logger::log(LogLevel level, const char* file, const char* func, std::string_view msg) const
+void Logger::finish()
 {
-    const std::string time = Timestamp::now().toFormatedString(true);
-
-    msg = trimTrailingNewline(msg);
-    const char* safeFunc = func == nullptr ? "unknown" : func;
-    std::FILE* out = (level == LogLevel::ERROR || level == LogLevel::FATAL) ? stderr : stdout;
-
-    std::lock_guard<std::mutex> lock(mutex_);
-    std::fprintf(out,
-                 "[%s] %s [tid=%d] [%-s::%-s] - [%.*s]\n",
-                 levelName(level),
-                 time.c_str(),
-                 CurrentThread::tid(),
-                 basename(file),
-                 safeFunc,
-                 static_cast<int>(msg.size()),
-                 msg.data());
-    std::fflush(out);
+    stream_ << " - " << file_ << ':' << line_ << '\n';
 }
+
+Logger::LogLevel Logger::logLevel()
+{
+    return g_logLevel.load(std::memory_order_relaxed);
+}
+
+void Logger::setLogLevel(LogLevel level)
+{
+    g_logLevel.store(level, std::memory_order_relaxed);
+}
+
+void Logger::setOutput(OutputFunc output)
+{
+    g_output = output;
+}
+
+void Logger::setFlush(FlushFunc flush)
+{
+    g_flush = flush;
+}
+
+}   // namespace mymuduo

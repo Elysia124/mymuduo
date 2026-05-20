@@ -37,7 +37,9 @@ private:
     void onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp ts)
     {
         auto msg = buf->retrieveAllAsString();
-        conn->send(msg);
+        std::cout << "received " << msg << "\n";
+        std::string str = "Hello, this server, received " + msg + " from you";
+        conn->send(str);
         conn->shutdown();
     }
 

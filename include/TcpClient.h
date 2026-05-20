@@ -4,6 +4,7 @@
 #include "EventLoop.h"
 #include "InetAddress.h"
 #include "noncopyable.h"
+#include "TcpConnection.h"
 #include <atomic>
 #include <memory>
 #include <mutex>

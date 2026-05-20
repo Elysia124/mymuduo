@@ -32,7 +32,7 @@ int createEventfd()
 {
     int evtfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (evtfd < 0) {
-        LOG_FATAL("eventfd create failed: errno=%d error=%s", errno, strerror(errno));
+        LOG_FATAL << "eventfd create failed: errno=" << errno << " error=" << strerror(errno);
     }
     return evtfd;
 }
@@ -48,12 +48,10 @@ EventLoop::EventLoop()
     , wakeupChannel_(std::make_unique<Channel>(this, wakeupFd_))
     , currentActiveChannel_(nullptr)
 {
-    LOG_DEBUG("EventLoop created loop=%p owner_tid=%d", static_cast<void*>(this), threadId_);
+    LOG_DEBUG << "EventLoop created loop=" << static_cast<void*>(this) << " owner_tid=" << threadId_;
 
     if (t_loopInThisThread != nullptr) {
-        LOG_FATAL("another EventLoop already exists in this thread: existing_loop=%p tid=%d",
-                  static_cast<void*>(t_loopInThisThread),
-                  threadId_);
+        LOG_FATAL << "another EventLoop already exists in this thread: existing_loop=" << static_cast<void*>(t_loopInThisThread) << " tid=" << threadId_;
     }
     else {
         t_loopInThisThread = this;
@@ -81,7 +79,7 @@ void EventLoop::handleRead() const
     ssize_t n = read(wakeupFd_, &one, sizeof(one));
 
     if (n != sizeof(one)) {
-        LOG_ERROR("eventfd read unexpected bytes=%zd expected=%zu", n, sizeof(one));
+        LOG_WARN << "eventfd read unexpected bytes=" << n << " expected=" << sizeof(one);
     }
 }
 
@@ -91,7 +89,7 @@ void EventLoop::loop()
     looping_ = true;
     quit_ = false;
 
-    LOG_INFO("EventLoop start loop=%p owner_tid=%d", static_cast<void*>(this), threadId_);
+    LOG_INFO << "EventLoop start loop=" << static_cast<void*>(this) << " owner_tid=" << threadId_;
 
     while (!quit_) {
         activeChannels_.clear();
@@ -104,7 +102,7 @@ void EventLoop::loop()
         doPendingFunctors();
     }
 
-    LOG_INFO("EventLoop stop loop=%p owner_tid=%d", static_cast<void*>(this), threadId_);
+    LOG_INFO << "EventLoop stop loop=" << static_cast<void*>(this) << " owner_tid=" << threadId_;
     looping_ = false;
 }
 
@@ -145,7 +143,7 @@ void EventLoop::wakeup() const
     ssize_t n = ::write(wakeupFd_, &one, sizeof(one));
 
     if (n != sizeof(one)) {
-        LOG_ERROR("eventfd write unexpected bytes=%zd expected=%zu", n, sizeof(one));
+        LOG_WARN << "eventfd write unexpected bytes=" << n << " expected=" << sizeof(one);
     }
 }
 
@@ -185,7 +183,7 @@ void EventLoop::doPendingFunctors()
 void EventLoop::assertInLoopThread() const
 {
     if (!isInLoopThread()) {
-        LOG_FATAL("EventLoop used from wrong thread: owner_tid=%d current_tid=%d", threadId_, CurrentThread::tid());
+        LOG_FATAL << "EventLoop used from wrong thread: owner_tid=" << threadId_ << " current_tid=" << CurrentThread::tid();
     }
 }
 

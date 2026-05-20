@@ -24,7 +24,7 @@ namespace {
 EventLoop* checkNotNull(EventLoop* loop)
 {
     if (loop == nullptr) {
-        LOG_FATAL("TcpServer baseLoop is nullptr");
+        LOG_FATAL << "TcpClient loop is nullptr";
     }
     return loop;
 }
@@ -50,12 +50,12 @@ TcpClient::TcpClient(EventLoop* loop, const InetAddress& serverAddr, std::string
     , nextConnId_(1)
 {
     connector_->setNewConnectionCallback([this](int sockfd) { newConnection(sockfd); });
-    LOG_INFO("TcpClient[%s] - connector %p created", name_.c_str(), static_cast<void*>(get_pointer(connector_)));
+    LOG_DEBUG << "TcpClient[" << name_.c_str() << "] - connector " << static_cast<void*>(get_pointer(connector_)) << " created";
 }
 
 TcpClient::~TcpClient()
 {
-    LOG_INFO("TcpClient[%s] - connector %p destoryed", name_.c_str(), static_cast<void*>(get_pointer(connector_)));
+    LOG_DEBUG << "TcpClient[" << name_.c_str() << "] - connector " << static_cast<void*>(get_pointer(connector_)) << " destroyed";
     TcpConnectionPtr conn;
     bool unique = false;
     {
@@ -81,7 +81,7 @@ TcpClient::~TcpClient()
 
 void TcpClient::connect()
 {
-    LOG_INFO("TcpClient[%s] is connecting to %s", name_.c_str(), connector_->serverAddress().toIpPort().c_str());
+    LOG_INFO << "TcpClient[" << name_.c_str() << "] is connecting to " << connector_->serverAddress().toIpPort().c_str();
     connect_.store(true, std::memory_order_relaxed);
     connector_->start();
 }
@@ -110,7 +110,7 @@ void TcpClient::newConnection(int sockfd)
     sockaddr_in peerSockAddr;
     socklen_t peerSockAddrlen = sizeof(peerSockAddr);
     if (::getpeername(sockfd, reinterpret_cast<sockaddr*>(&peerSockAddr), &peerSockAddrlen) < 0) {
-        LOG_FATAL("get peerAddr fail, errno=%d, error=%s", errno, strerror(errno));
+        LOG_FATAL << "get peerAddr fail, errno=" << errno << ", error=" << strerror(errno);
     }
     InetAddress peerAddr(peerSockAddr);
 
@@ -121,7 +121,7 @@ void TcpClient::newConnection(int sockfd)
     sockaddr_in localSockAddr;
     socklen_t localSockAddrlen = sizeof(localSockAddr);
     if (::getsockname(sockfd, reinterpret_cast<sockaddr*>(&localSockAddr), &localSockAddrlen) < 0) {
-        LOG_FATAL("get localAddr fail, errno=%d, error=%s", errno, strerror(errno));
+        LOG_FATAL << "get localAddr fail, errno=" << errno << ", error=" << strerror(errno);
     }
     InetAddress localAddr(localSockAddr);
 
@@ -154,7 +154,7 @@ void TcpClient::removeConnection(const TcpConnectionPtr& conn)
 
     loop_->queueInLoop([conn] { conn->connectDestroyed(); });
     if (retry_ && connect_) {
-        LOG_INFO("TcpClient[%s] reconnecting to %s", name_.c_str(), connector_->serverAddress().toIpPort().c_str());
+        LOG_INFO << "TcpClient[" << name_.c_str() << "] reconnecting to " << connector_->serverAddress().toIpPort().c_str();
         connector_->restart();
     }
 }

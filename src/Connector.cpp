@@ -20,13 +20,13 @@ bool isSelfConnect(int sockfd)
     sockaddr_in localAddr;
     socklen_t localAddrlen = sizeof(localAddr);
     if (::getsockname(sockfd, reinterpret_cast<sockaddr*>(&localAddr), &localAddrlen) < 0) {
-        LOG_FATAL("getsockname fail errno=%d, error=%s", errno, strerror(errno));
+        LOG_FATAL << "getsockname fail errno=" << errno << ", error=" << strerror(errno);
     }
 
     sockaddr_in peerAddr;
     socklen_t peerAddrlen = sizeof(peerAddr);
     if (::getpeername(sockfd, reinterpret_cast<sockaddr*>(&peerAddr), &peerAddrlen) < 0) {
-        LOG_FATAL("getsockname fail errno=%d, error=%s", errno, strerror(errno));
+        LOG_FATAL << "getsockname fail errno=" << errno << ", error=" << strerror(errno);
     }
 
     return localAddr.sin_port == peerAddr.sin_port && localAddr.sin_addr.s_addr == peerAddr.sin_addr.s_addr;
@@ -40,12 +40,12 @@ Connector::Connector(EventLoop* loop, const InetAddress& serverAddr)
     , state_(State::kDisconnected)
     , retryDelayMs_(kInitRetryDelayMs)
 {
-    LOG_DEBUG("Connector created");
+    LOG_DEBUG << "Connector created";
 }
 
 Connector::~Connector()
 {
-    LOG_DEBUG("Connector destroyed");
+    LOG_DEBUG << "Connector destroyed";
 }
 
 void Connector::start()
@@ -62,7 +62,7 @@ void Connector::startInLoop()
         connect();
     }
     else {
-        LOG_DEBUG("Do not connect");
+        LOG_DEBUG << "do not connect";
     }
 }
 
@@ -89,7 +89,7 @@ void Connector::connect()
 {
     int sockfd = ::socket(AF_INET, SOCK_NONBLOCK | SOCK_STREAM | SOCK_CLOEXEC, 0);   // start connecting
     if (sockfd < 0) {
-        LOG_FATAL("connect socket create failed: errno=%d error=%s", errno, strerror(errno));
+        LOG_FATAL << "connect socket create failed: errno=" << errno << " error=" << strerror(errno);
     }
 
     int ret = ::connect(sockfd, reinterpret_cast<sockaddr*>(&serverAddr_), sizeof(serverAddr_));
@@ -118,12 +118,12 @@ void Connector::connect()
         case EBADF:
         case EFAULT:
         case ENOTSOCK:
-            LOG_ERROR("connect failed: errno=%d error=%s", savedErrno, strerror(savedErrno));
+            LOG_ERROR << "connect failed: errno=" << savedErrno << " error=" << strerror(savedErrno);
             ::close(sockfd);
             break;
 
         default:
-            LOG_ERROR("Unexpected error: errno=%d", savedErrno);
+            LOG_ERROR << "Unexpected error: errno=" << savedErrno;
             ::close(sockfd);
             break;
     }
@@ -172,11 +172,11 @@ void Connector::handleWrite()
         // sockfd 可读不代表连接成功，需调用 getsockopt 拿到 具体的 SO_ERROR 值来判断
         if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optVal, &optlen) < 0) {
             // getsockopt 本身调用失败
-            LOG_ERROR("getsockopt failed errno=%d, error: %s", errno, strerror(errno));
+            LOG_ERROR << "getsockopt failed errno=" << errno << ", error: " << strerror(errno);
             retry(sockfd);
         }
         else if (isSelfConnect(sockfd)) {   // 自连接
-            LOG_ERROR("self connect");
+            LOG_WARN << "self connect";
             retry(sockfd);
         }
         else {   // connect success
@@ -204,11 +204,11 @@ void Connector::retry(int sockfd)
     ::close(sockfd);
     setState(State::kDisconnected);
     if (connect_.load(std::memory_order_relaxed)) {
-        LOG_INFO("Retry connecting to %s in %d milliseconds", serverAddr_.toIpPort().c_str(), retryDelayMs_);
+        LOG_INFO << "Retry connecting to " << serverAddr_.toIpPort().c_str() << " in " << retryDelayMs_ << " milliseconds";
         loop_->runAfter(retryDelayMs_ / 1000.0, [self = shared_from_this()] { self->startInLoop(); });
         retryDelayMs_ = std::min(retryDelayMs_ * 2, kMaxRetryDelayMs);
     }
     else {
-        LOG_DEBUG("do not connect");
+        LOG_DEBUG << "do not connect";
     }
 }

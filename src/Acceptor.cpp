@@ -15,7 +15,7 @@ int createNonblockingOrDie()
 {
     int sockfd = ::socket(AF_INET, SOCK_NONBLOCK | SOCK_STREAM | SOCK_CLOEXEC, 0);
     if (sockfd < 0) {
-        LOG_FATAL("listen socket create failed: errno=%d error=%s", errno, strerror(errno));
+        LOG_FATAL << "listen socket create failed: errno=" << errno << " error=" << strerror(errno);
     }
     return sockfd;
 }
@@ -63,10 +63,10 @@ void Acceptor::handleRead()
                 break;
             }
             if (errno == EMFILE) {
-                LOG_ERROR("accept failed: file descriptor limit reached, errno=%d error=%s", errno, strerror(errno));
+                LOG_ERROR << "accept failed: file descriptor limit reached, errno=" << errno << " error=" << strerror(errno);
             }
             else {
-                LOG_ERROR("accept failed: errno=%d error=%s", errno, strerror(errno));
+                LOG_ERROR << "accept failed: errno=" << errno << " error=" << strerror(errno);
             }
             break;
         }

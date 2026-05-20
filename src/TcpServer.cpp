@@ -21,7 +21,7 @@ namespace {
 EventLoop* checkNotNull(EventLoop* loop)
 {
     if (loop == nullptr) {
-        LOG_FATAL("TcpServer baseLoop is nullptr");
+        LOG_FATAL << "TcpServer loop is nullptr";
     }
     return loop;
 }
@@ -80,17 +80,13 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     snprintf(buf, sizeof(buf), "-%s#%d", ipPort_.c_str(), nextConnId_++);
     std::string connName = name_ + buf;
 
-    LOG_INFO("new connection server=%s conn=%s fd=%d peer=%s",
-             name_.c_str(),
-             connName.c_str(),
-             sockfd,
-             peerAddr.toIpPort().c_str());
+    LOG_INFO << "new connection server=" << name_.c_str() << " conn=" << connName.c_str() << " fd=" << sockfd << " peer=" << peerAddr.toIpPort().c_str();
 
     // 通过 sockfd 获取其绑定的本机的 ip 地址和端口
     sockaddr_in local;
     socklen_t addrlen = sizeof(local);
     if (::getsockname(sockfd, reinterpret_cast<sockaddr*>(&local), &addrlen) < 0) {
-        LOG_ERROR("getsockname failed fd=%d errno=%d error=%s", sockfd, errno, strerror(errno));
+        LOG_ERROR << "getsockname failed fd=" << sockfd << " errno=" << errno << " error=" << strerror(errno);
     }
 
     InetAddress localAddr(local);
@@ -114,7 +110,7 @@ void TcpServer::removeConnection(TcpConnectionPtr conn)
 
 void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn)
 {
-    LOG_INFO("remove connection server=%s conn=%s", name_.c_str(), conn->name().c_str());
+    LOG_DEBUG << "remove connection server=" << name_.c_str() << " conn=" << conn->name().c_str();
 
     connections_.erase(conn->name());
     auto* ioLoop = conn->getLoop();

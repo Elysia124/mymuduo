@@ -99,7 +99,6 @@ cmake \
     -DCMAKE_CXX_COMPILER="${CXX}" \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
-    -DMYMUDUO_DEBUG_LOG="${DEBUG_LOG}" \
 
 if [ -n "$TARGET" ]; then
     cmake --build "${BUILD_DIR}" --target "${TARGET}" --parallel "$(nproc)"

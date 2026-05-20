@@ -23,7 +23,7 @@ int createTimerfd()
 {
     int timerfd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
     if (timerfd < 0) {
-        LOG_FATAL("create timerfd failed errno=%d, error=%s", errno, strerror(errno));
+        LOG_FATAL << "create timerfd failed errno=" << errno << ", error=" << strerror(errno);
     }
     return timerfd;
 }
@@ -48,10 +48,10 @@ void readTimerfd(int timerfd)
     uint64_t howmany = 0;
     ssize_t n = ::read(timerfd, &howmany, sizeof(howmany));
 
-    LOG_DEBUG("Timer=%d has timed out %lu times", timerfd, howmany);
+    LOG_TRACE << "Timer=" << timerfd << " has timed out " << howmany << " times";
 
     if (n != sizeof(howmany)) {
-        LOG_ERROR("timer read() reads %ld bytes instead of 8 errno=%d, error=%s", n, errno, strerror(errno));
+        LOG_ERROR << "timer read() reads " << n << " bytes instead of 8 errno=" << errno << ", error=" << strerror(errno);
     }
 }
 
@@ -62,7 +62,7 @@ void resetTimerfd(int timerfd, Timestamp expiration)
     itimerspec oldValue{};
     newValue.it_value = howMuchTimeFromNow(expiration);
     if (::timerfd_settime(timerfd, 0, &newValue, &oldValue) < 0) {
-        LOG_FATAL("timerfd=%d set time failed errno=%d, error=%s", timerfd, errno, strerror(errno));
+        LOG_FATAL << "timerfd=" << timerfd << " set time failed errno=" << errno << ", error=" << strerror(errno);
     }
 }
 }   // namespace mymuduo::detail
