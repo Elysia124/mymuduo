@@ -18,7 +18,7 @@ public:
 
     void append(const char* buf, size_t len)
     {
-        if (static_cast<size_t>(avail()) > len) {
+        if (static_cast<size_t>(avail()) >= len) {
             std::memcpy(cur_, buf, len);
             cur_ += len;
         }

@@ -4,7 +4,6 @@
 #include "noncopyable.h"
 
 #include <cstddef>
-#include <mutex>
 
 namespace mymuduo {
 

@@ -1,3 +1,4 @@
+#!/bin/bash
 set -e
 
 SOURCE_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -34,8 +35,6 @@ for arg in "$@"; do
             echo "Usage:"
             echo "  ./build.sh"
             echo "  ./build.sh debug"
-            echo "  ./build.sh debug-log"
-            echo "  ./build.sh debug debug-log"
             echo "  ./build.sh install"
             echo "  ./build.sh clean"
             echo "  ./build.sh --target=testserver"
@@ -58,9 +57,6 @@ fi
 # Debug+日志     -> build/debug-debug_log
 BUILD_DIR="${BUILD_ROOT}/${BUILD_TYPE}"
 
-if [ "$DEBUG_LOG" = "ON" ]; then
-    BUILD_DIR="${BUILD_DIR}-debug_log"
-fi
 
 if [ "$CLEAN" -eq 1 ]; then
     echo "Cleaning build directory: ${BUILD_ROOT}"
@@ -81,7 +77,6 @@ fi
 echo "Source dir     : ${SOURCE_DIR}"
 echo "Build dir      : ${BUILD_DIR}"
 echo "Build type     : ${CMAKE_BUILD_TYPE}"
-echo "Debug log      : ${DEBUG_LOG}"
 echo "Install prefix : ${INSTALL_PREFIX}"
 echo "CXX            : ${CXX}"
 
@@ -94,7 +89,7 @@ cmake \
     -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
     -DCMAKE_CXX_COMPILER="${CXX}" \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-    -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
+    -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" 
 
 if [ -n "$TARGET" ]; then
     cmake --build "${BUILD_DIR}" --target "${TARGET}" --parallel "$(nproc)"

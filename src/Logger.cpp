@@ -12,7 +12,7 @@ namespace mymuduo {
 
 namespace {
 
-const char* LogLevelName[Logger::NUM_LOG_LEVELS] = {"TRACE ", "DEBUG ", "INFO", "WARN", "ERROR", "FATAL"};
+const char* LogLevelName[Logger::NUM_LOG_LEVELS] = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
 
 std::atomic<Logger::LogLevel> g_logLevel{Logger::INFO};
 
@@ -49,7 +49,7 @@ const char* basename(const char* file)
 
 Logger::Logger(const char* file, int line, LogLevel level) : level_(level), file_(basename(file)), line_(line)
 {
-    stream_ << '[' << LogLevelName[level_] << '] ';
+    stream_ << '[' << LogLevelName[level_] << "] ";
 
     formatTime();
 
