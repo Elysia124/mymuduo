@@ -78,13 +78,19 @@ void Channel::handleEventWithGuard(Timestamp receiveTime)
 std::string Channel::eventsToString() const
 {
     std::ostringstream oss;
-    switch (events_) {
-        case kNoneEvent:
-            oss << "NoneEvent";
-        case kReadEvent:
-            oss << "ReadEvent";
-        case kWriteEvent:
-            oss << "WriteEvent";
+    if (events_ == kNoneEvent) {
+        oss << "NoneEvent";
+        return oss.str();
+    }
+
+    if (events_ & EPOLLIN) {
+        oss << "EPOLLIN ";
+    }
+    if (events_ & EPOLLPRI) {
+        oss << "EPOLLPRI ";
+    }
+    if (events_ & EPOLLOUT) {
+        oss << "EPOLLOUT ";
     }
 
     return oss.str();
@@ -93,18 +99,22 @@ std::string Channel::eventsToString() const
 std::string Channel::reventsToString() const
 {
     std::ostringstream oss;
-    switch (revents_) {
-        case EPOLLHUP:
-            oss << "EPOLLHUP";
-        case EPOLLERR:
-            oss << "EPOLLERR";
-        case EPOLLIN:
-            oss << "EPOLLIN";
-        case EPOLLOUT:
-            oss << "EPOLLOUT";
-        case EPOLLIN | EPOLLPRI:
-            oss << "EPOLLIN | EPOLLPRI";
+    if (revents_ & EPOLLHUP) {
+        oss << "EPOLLHUP ";
     }
+    if (revents_ & EPOLLERR) {
+        oss << "EPOLLERR ";
+    }
+    if (revents_ & EPOLLIN) {
+        oss << "EPOLLIN ";
+    }
+    if (revents_ & EPOLLPRI) {
+        oss << "EPOLLPRI ";
+    }
+    if (revents_ & EPOLLOUT) {
+        oss << "EPOLLOUT ";
+    }
+
 
     return oss.str();
 }

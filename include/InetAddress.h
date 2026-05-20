@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <netinet/in.h>
 #include <string>
+#include <unistd.h>
 
 namespace mymuduo {
 // 封装 socket 地址类型
@@ -17,6 +18,7 @@ public:
     uint16_t toPort() const;
 
     const sockaddr_in* getSockAddr() const { return &addr_; }
+    socklen_t length() const{return sizeof(addr_);}
     void setSockAddr(const sockaddr_in& addr) { addr_ = addr; }
 
 private:

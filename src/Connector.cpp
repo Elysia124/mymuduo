@@ -92,7 +92,7 @@ void Connector::connect()
         LOG_FATAL << "connect socket create failed: errno=" << errno << " error=" << strerror(errno);
     }
 
-    int ret = ::connect(sockfd, reinterpret_cast<const sockaddr*>(serverAddr_.getSockAddr()), sizeof(serverAddr_));
+    int ret = ::connect(sockfd, reinterpret_cast<const sockaddr*>(serverAddr_.getSockAddr()), serverAddr_.length());
     int savedErrno = ret == 0 ? 0 : errno;
 
     switch (savedErrno) {
