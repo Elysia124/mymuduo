@@ -53,8 +53,6 @@ fi
 # 默认目录：
 # Release        -> build/release
 # Debug          -> build/debug
-# Release+日志   -> build/release-debug_log
-# Debug+日志     -> build/debug-debug_log
 BUILD_DIR="${BUILD_ROOT}/${BUILD_TYPE}"
 
 

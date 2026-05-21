@@ -54,6 +54,13 @@ if(MYMUDUO_BUILD_EXAMPLES)
     add_subdirectory(example/client EXCLUDE_FROM_ALL)
 endif()
 
+option(MYMUDUO_BUILD_TESTS "Build mymuduo tests" OFF)
+
+if(MYMUDUO_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
 install(TARGETS mymuduo
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
@@ -64,3 +71,4 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
     DESTINATION include/mymuduo
     FILES_MATCHING PATTERN "*.h"
 )
+
