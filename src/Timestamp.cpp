@@ -25,7 +25,7 @@ Timestamp Timestamp::invalid()
     return Timestamp(0);
 }
 
-std::string Timestamp::toFormatedString(bool showMicroseconds) const
+std::string Timestamp::toFormattedString(bool showMicroseconds) const
 {
     const auto seconds = static_cast<time_t>(microSecondsSinceEpoch_ / kMicroSecondsPerSecond);
 

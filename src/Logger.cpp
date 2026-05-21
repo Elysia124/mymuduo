@@ -81,9 +81,9 @@ void Logger::formatTime()
 {
     Timestamp now = Timestamp::now();
 
-    // Timestamp::toFormatedString(true)
+    // Timestamp::toFormattedString(true)
     // Example: 2026-05-16 09:08:58.313460
-    stream_ << now.toFormatedString(true) << " ";
+    stream_ << now.toFormattedString(true) << " ";
 }
 
 void Logger::finish()

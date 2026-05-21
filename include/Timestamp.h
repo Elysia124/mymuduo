@@ -20,7 +20,7 @@ public:
     int64_t SecondsSinceEpoch() const { return microSecondsSinceEpoch_ / kMicroSecondsPerSecond; }
 
     // Example: 2026-05-16 09:08:58.313460
-    std::string toFormatedString(bool showMicroseconds = true) const;
+    std::string toFormattedString(bool showMicroseconds = true) const;
 
     std::string toString() const;
 

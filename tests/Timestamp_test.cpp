@@ -29,7 +29,7 @@ int main()
     std::string s = Timestamp(123456789).toString();
     CHECK_TRUE(s.find("123.456789") != std::string::npos);
 
-    std::string fs = now.toFormatedString(true);
+    std::string fs = now.toFormattedString(true);
     CHECK_TRUE(fs.size() >= 19); // YYYY-MM-DD HH:MM:SS...
 
     std::cout << "Timestamp_test passed\n";
