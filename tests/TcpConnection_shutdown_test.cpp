@@ -58,18 +58,18 @@ int main()
 
     server.setConnectionCallback([&](const TcpConnectionPtr& conn) {
         if (conn->connected()) {
-            ++upCount;
+            upCount.fetch_add(1, std::memory_order_relaxed);
         }
         else {
-            ++downCount;
-            if (clientGotAll.load()) {
+            downCount.fetch_add(1, std::memory_order_relaxed);
+            if (clientGotAll.load(std::memory_order_relaxed)) {
                 loop.quit();
             }
         }
     });
 
     server.setWriteCompleteCallback([&](const TcpConnectionPtr&) {
-        ++writeCompleteCount;
+        writeCompleteCount.fetch_add(1, std::memory_order_relaxed);
     });
 
     server.setMessageCallback([&](const TcpConnectionPtr& conn, Buffer* buf, Timestamp) {
@@ -94,7 +94,7 @@ int main()
         ::close(fd);
 
         if (received == payload) {
-            clientGotAll = true;
+            clientGotAll.store(true, std::memory_order_relaxed);
         }
         else {
             std::cerr << "payload mismatch received=" << received.size()
@@ -102,27 +102,27 @@ int main()
         }
 
         loop.queueInLoop([&] {
-            if (downCount.load() > 0) {
+            if (downCount.load(std::memory_order_relaxed) > 0) {
                 loop.quit();
             }
         });
     });
 
     loop.runAfter(8.0, [&] {
-        std::cerr << "TcpConnection_shutdown_test timeout up=" << upCount.load()
-                  << " down=" << downCount.load()
-                  << " writeComplete=" << writeCompleteCount.load()
-                  << " clientGotAll=" << clientGotAll.load() << '\n';
+        std::cerr << "TcpConnection_shutdown_test timeout up=" << upCount.load(std::memory_order_relaxed)
+                  << " down=" << downCount.load(std::memory_order_relaxed)
+                  << " writeComplete=" << writeCompleteCount.load(std::memory_order_relaxed)
+                  << " clientGotAll=" << clientGotAll.load(std::memory_order_relaxed) << '\n';
         std::abort();
     });
 
     loop.loop();
     client.join();
 
-    CHECK_EQ(upCount.load(), 1);
-    CHECK_EQ(downCount.load(), 1);
-    CHECK_TRUE(clientGotAll.load());
-    CHECK_TRUE(writeCompleteCount.load() >= 1);
+    CHECK_EQ(upCount.load(std::memory_order_relaxed), 1);
+    CHECK_EQ(downCount.load(std::memory_order_relaxed), 1);
+    CHECK_TRUE(clientGotAll.load(std::memory_order_relaxed));
+    CHECK_TRUE(writeCompleteCount.load(std::memory_order_relaxed) >= 1);
 
     std::cout << "TcpConnection_shutdown_test passed\n";
     return 0;

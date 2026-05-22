@@ -28,7 +28,7 @@ int main()
 
     std::thread t([&] {
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        loop.queueInLoop([&] { crossThread = 1; });
+        loop.queueInLoop([&] { crossThread.store(1, std::memory_order_relaxed); });
     });
 
     loop.runAfter(0.100, [&] { loop.quit(); });
@@ -37,7 +37,7 @@ int main()
 
     CHECK_EQ(queued, 1);
     CHECK_EQ(nested, 1);
-    CHECK_EQ(crossThread.load(), 1);
+    CHECK_EQ(crossThread.load(std::memory_order_relaxed), 1);
 
     std::cout << "EventLoop_test passed\n";
     return 0;

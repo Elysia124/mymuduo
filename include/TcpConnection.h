@@ -27,7 +27,7 @@ public:
     const std::string& name() const { return name_; }
     const InetAddress& localAddress() const { return localAddr_; }
     const InetAddress& peerAddress() const { return peerAddr_; }
-    bool connected() const { return state_.load() == StateE::kconnected; }
+    bool connected() const { return state_.load(std::memory_order_relaxed) == StateE::kconnected; }
 
     void send(const std::string& buf);
     void send(std::string&& buf);   // for rval
@@ -54,7 +54,7 @@ private:
         kdisconnecting
     };
 
-    void setState(StateE state) { state_.store(state); }
+    void setState(StateE state) { state_.store(state, std::memory_order_relaxed); }
     void handleRead(Timestamp receiveTime);
     void handleWrite();
     void handleClose();

@@ -31,8 +31,8 @@ public:
     }
 
     EventLoop* getLoop() const { return loop_; }
-    bool retry() const { return retry_; }
-    void enableRetry() { retry_ = true; }
+    bool retry() const { return retry_.load(std::memory_order_relaxed); }
+    void enableRetry() { retry_.store(true, std::memory_order_relaxed); }
 
     const std::string& name() const { return name_; }
 

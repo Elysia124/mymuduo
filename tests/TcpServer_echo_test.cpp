@@ -24,10 +24,10 @@ int main()
     server.setThreadNum(0);
     server.setConnectionCallback([&](const TcpConnectionPtr& conn) {
         if (conn->connected()) {
-            ++upCount;
+            upCount.fetch_add(1, std::memory_order_relaxed);
         }
         else {
-            ++downCount;
+            downCount.fetch_add(1, std::memory_order_relaxed);
         }
     });
     server.setMessageCallback([](const TcpConnectionPtr& conn, Buffer* buf, Timestamp) {
@@ -53,7 +53,7 @@ int main()
     loop.loop();
     client.join();
 
-    CHECK_EQ(upCount.load(), 1);
+    CHECK_EQ(upCount.load(std::memory_order_relaxed), 1);
 
     std::cout << "TcpServer_echo_test passed\n";
     return 0;

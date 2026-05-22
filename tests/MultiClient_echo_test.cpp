@@ -39,14 +39,14 @@ int main()
             CHECK_EQ(recvExactly(fd, msg.size()), msg);
             ::close(fd);
 
-            if (++ok == kClients) {
+            if (ok.fetch_add(1, std::memory_order_relaxed) + 1 == kClients) {
                 loop.queueInLoop([&] { loop.quit(); });
             }
         });
     }
 
     loop.runAfter(5.0, [&] {
-        std::cerr << "MultiClient_echo_test timeout, ok=" << ok.load() << '\n';
+        std::cerr << "MultiClient_echo_test timeout, ok=" << ok.load(std::memory_order_relaxed) << '\n';
         std::abort();
     });
     loop.loop();
@@ -55,7 +55,7 @@ int main()
         t.join();
     }
 
-    CHECK_EQ(ok.load(), kClients);
+    CHECK_EQ(ok.load(std::memory_order_relaxed), kClients);
 
     std::cout << "MultiClient_echo_test passed\n";
     return 0;

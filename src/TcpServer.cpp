@@ -59,7 +59,7 @@ void TcpServer::setThreadNum(int numThreads)
 void TcpServer::start()
 {
     // 保证 TcpServer::start() 只真正执行一次
-    if (started_.fetch_add(1) == 0) {
+    if (started_.fetch_add(1, std::memory_order_relaxed) == 0) {
 
         // 启动 EventLoopThreadPool：
         // 如果 numThreads > 0，则创建并启动 numThreads 个 IO 线程，

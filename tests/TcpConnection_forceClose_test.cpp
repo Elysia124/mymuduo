@@ -51,15 +51,15 @@ int main()
 
     server.setConnectionCallback([&](const TcpConnectionPtr& conn) {
         if (conn->connected()) {
-            ++upCount;
+            upCount.fetch_add(1, std::memory_order_relaxed);
             // 确保 connectEstablished 完成之后再 forceClose。
             conn->getLoop()->runAfter(0.050, [conn] {
                 conn->forceClose();
             });
         }
         else {
-            ++downCount;
-            if (clientSawClose.load()) {
+            downCount.fetch_add(1, std::memory_order_relaxed);
+            if (clientSawClose.load(std::memory_order_relaxed)) {
                 loop.quit();
             }
         }
@@ -71,27 +71,27 @@ int main()
         int fd = connectToLocalhost(port);
         waitForPeerClose(fd);
         ::close(fd);
-        clientSawClose = true;
+        clientSawClose.store(true, std::memory_order_relaxed);
         loop.queueInLoop([&] {
-            if (downCount.load() > 0) {
+            if (downCount.load(std::memory_order_relaxed) > 0) {
                 loop.quit();
             }
         });
     });
 
     loop.runAfter(3.0, [&] {
-        std::cerr << "TcpConnection_forceClose_test timeout up=" << upCount.load()
-                  << " down=" << downCount.load()
-                  << " clientSawClose=" << clientSawClose.load() << '\n';
+        std::cerr << "TcpConnection_forceClose_test timeout up=" << upCount.load(std::memory_order_relaxed)
+                  << " down=" << downCount.load(std::memory_order_relaxed)
+                  << " clientSawClose=" << clientSawClose.load(std::memory_order_relaxed) << '\n';
         std::abort();
     });
 
     loop.loop();
     client.join();
 
-    CHECK_EQ(upCount.load(), 1);
-    CHECK_EQ(downCount.load(), 1);
-    CHECK_TRUE(clientSawClose.load());
+    CHECK_EQ(upCount.load(std::memory_order_relaxed), 1);
+    CHECK_EQ(downCount.load(std::memory_order_relaxed), 1);
+    CHECK_TRUE(clientSawClose.load(std::memory_order_relaxed));
 
     std::cout << "TcpConnection_forceClose_test passed\n";
     return 0;

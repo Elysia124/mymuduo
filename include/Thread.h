@@ -24,7 +24,7 @@ public:
 
     const std::string& name() const { return name_; }
 
-    static int numCreated() { return numCreated_; }
+    static int numCreated() { return numCreated_.load(std::memory_order_relaxed); }
 
     bool joinable() const noexcept { return thread_.joinable(); };
 

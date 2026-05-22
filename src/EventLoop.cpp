@@ -88,12 +88,12 @@ void EventLoop::handleRead() const
 
 void EventLoop::loop()
 {
-    looping_ = true;
-    quit_ = false;
+    looping_.store(true, std::memory_order_relaxed);
+    quit_.store(false, std::memory_order_relaxed);
 
     LOG_INFO << "EventLoop start loop=" << static_cast<void*>(this) << " owner_tid=" << threadId_;
 
-    while (!quit_) {
+    while (!quit_.load(std::memory_order_relaxed)) {
         activeChannels_.clear();
         pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
 
@@ -105,12 +105,12 @@ void EventLoop::loop()
     }
 
     LOG_INFO << "EventLoop stop loop=" << static_cast<void*>(this) << " owner_tid=" << threadId_;
-    looping_ = false;
+    looping_.store(false, std::memory_order_relaxed);
 }
 
 void EventLoop::quit()
 {
-    quit_ = true;
+    quit_.store(true, std::memory_order_relaxed);
 
     if (!isInLoopThread()) {
         wakeup();
@@ -134,7 +134,7 @@ void EventLoop::queueInLoop(Functor cb)
         pendingFunctors_.push_back(std::move(cb));
     }
 
-    if (!isInLoopThread() || callingPendingFunctors_) {
+    if (!isInLoopThread() || callingPendingFunctors_.load(std::memory_order_relaxed)) {
         wakeup();
     }
 }
@@ -170,7 +170,7 @@ bool EventLoop::hasChannel(Channel* channel)
 void EventLoop::doPendingFunctors()
 {
     std::vector<Functor> functors;
-    callingPendingFunctors_ = true;
+    callingPendingFunctors_.store(true, std::memory_order_relaxed);
 
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -179,7 +179,7 @@ void EventLoop::doPendingFunctors()
 
     for (auto& functor : functors) { functor(); }
 
-    callingPendingFunctors_ = false;
+    callingPendingFunctors_.store(false, std::memory_order_relaxed);
 }
 
 void EventLoop::assertInLoopThread() const

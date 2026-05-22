@@ -23,14 +23,14 @@ int main()
 
     {
         EventLoopThread loopThread([&](EventLoop* loop) {
-            initCalled = true;
+            initCalled.store(true, std::memory_order_relaxed);
             loopTid = CurrentThread::tid();
             CHECK_TRUE(loop->isInLoopThread());
         }, "EventLoopThread_test");
 
         EventLoop* loop = loopThread.startLoop();
         CHECK_TRUE(loop != nullptr);
-        CHECK_TRUE(initCalled.load());
+        CHECK_TRUE(initCalled.load(std::memory_order_relaxed));
 
         loop->queueInLoop([&] {
             callbackTid = CurrentThread::tid();

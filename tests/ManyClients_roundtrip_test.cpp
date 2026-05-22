@@ -32,10 +32,10 @@ int main()
 
     server.setConnectionCallback([&](const TcpConnectionPtr& conn) {
         if (conn->connected()) {
-            ++upCount;
+            upCount.fetch_add(1, std::memory_order_relaxed);
         }
         else {
-            ++downCount;
+            downCount.fetch_add(1, std::memory_order_relaxed);
         }
     });
 
@@ -68,7 +68,7 @@ int main()
 
                 ::close(fd);
                 if (ok) {
-                    ++successCount;
+                    successCount.fetch_add(1, std::memory_order_relaxed);
                 }
             });
         }
@@ -82,17 +82,17 @@ int main()
     });
 
     loop.runAfter(10.0, [&] {
-        std::cerr << "ManyClients_roundtrip_test timeout up=" << upCount.load()
-                  << " down=" << downCount.load()
-                  << " success=" << successCount.load() << '\n';
+        std::cerr << "ManyClients_roundtrip_test timeout up=" << upCount.load(std::memory_order_relaxed)
+                  << " down=" << downCount.load(std::memory_order_relaxed)
+                  << " success=" << successCount.load(std::memory_order_relaxed) << '\n';
         std::abort();
     });
 
     loop.loop();
     clients.join();
 
-    CHECK_EQ(successCount.load(), kClients);
-    CHECK_EQ(upCount.load(), kClients);
+    CHECK_EQ(successCount.load(std::memory_order_relaxed), kClients);
+    CHECK_EQ(upCount.load(std::memory_order_relaxed), kClients);
 
     std::cout << "ManyClients_roundtrip_test passed\n";
     return 0;

@@ -26,11 +26,11 @@ int main()
         pool.setThreadNum(3);
 
         pool.start([&](EventLoop*) {
-            ++initCount;
+            initCount.fetch_add(1, std::memory_order_relaxed);
         });
 
         CHECK_TRUE(pool.started());
-        CHECK_EQ(initCount.load(), 3);
+        CHECK_EQ(initCount.load(std::memory_order_relaxed), 3);
 
         EventLoop* l1 = pool.getNextLoop();
         EventLoop* l2 = pool.getNextLoop();

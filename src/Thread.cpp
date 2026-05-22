@@ -75,7 +75,7 @@ void Thread::join()
 
 void Thread::setDefaultName()
 {
-    int num = ++numCreated_;
+    int num = numCreated_.fetch_add(1, std::memory_order_relaxed) + 1;
     if (name_.empty()) {
         char buf[32];
         snprintf(buf, sizeof(buf), "Thread %d", num);

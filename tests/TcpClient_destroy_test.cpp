@@ -49,10 +49,10 @@ void testDestroyWhileConnected()
 
     server.setConnectionCallback([&](const TcpConnectionPtr& conn) {
         if (conn->connected()) {
-            ++serverUp;
+            serverUp.fetch_add(1, std::memory_order_relaxed);
         }
         else {
-            ++serverDown;
+            serverDown.fetch_add(1, std::memory_order_relaxed);
             loop.quit();
         }
     });
@@ -62,7 +62,7 @@ void testDestroyWhileConnected()
     client = std::make_unique<TcpClient>(&loop, InetAddress(port), "DestroyConnectedClient");
     client->setConnectionCallback([&](const TcpConnectionPtr& conn) {
         if (conn->connected()) {
-            clientConnected = true;
+            clientConnected.store(true, std::memory_order_relaxed);
             conn->getLoop()->runAfter(0.050, [&] {
                 client.reset();
             });
@@ -71,18 +71,18 @@ void testDestroyWhileConnected()
     client->connect();
 
     loop.runAfter(3.0, [&] {
-        std::cerr << "testDestroyWhileConnected timeout serverUp=" << serverUp.load()
-                  << " serverDown=" << serverDown.load()
-                  << " clientConnected=" << clientConnected.load() << '\n';
+        std::cerr << "testDestroyWhileConnected timeout serverUp=" << serverUp.load(std::memory_order_relaxed)
+                  << " serverDown=" << serverDown.load(std::memory_order_relaxed)
+                  << " clientConnected=" << clientConnected.load(std::memory_order_relaxed) << '\n';
         std::abort();
     });
 
     loop.loop();
 
     CHECK_TRUE(client == nullptr);
-    CHECK_TRUE(clientConnected.load());
-    CHECK_EQ(serverUp.load(), 1);
-    CHECK_EQ(serverDown.load(), 1);
+    CHECK_TRUE(clientConnected.load(std::memory_order_relaxed));
+    CHECK_EQ(serverUp.load(std::memory_order_relaxed), 1);
+    CHECK_EQ(serverDown.load(std::memory_order_relaxed), 1);
 }
 
 void testDestroyIdleClient()

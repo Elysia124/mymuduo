@@ -27,14 +27,14 @@ int main()
     client.enableRetry();
     client.setConnectionCallback([&](const TcpConnectionPtr& conn) {
         if (conn->connected()) {
-            connected = true;
+            connected.store(true, std::memory_order_relaxed);
             conn->send("ping");
         }
     });
     client.setMessageCallback([&](const TcpConnectionPtr& conn, Buffer* buf, Timestamp) {
         std::string msg = buf->retrieveAllAsString();
         if (msg == "pong") {
-            gotPong = true;
+            gotPong.store(true, std::memory_order_relaxed);
             conn->shutdown();
             loop.quit();
         }
@@ -56,15 +56,15 @@ int main()
     });
 
     loop.runAfter(4.0, [&] {
-        std::cerr << "TcpClient_retry_test timeout connected=" << connected.load()
-                  << " gotPong=" << gotPong.load() << '\n';
+        std::cerr << "TcpClient_retry_test timeout connected=" << connected.load(std::memory_order_relaxed)
+                  << " gotPong=" << gotPong.load(std::memory_order_relaxed) << '\n';
         std::abort();
     });
 
     loop.loop();
 
-    CHECK_TRUE(connected.load());
-    CHECK_TRUE(gotPong.load());
+    CHECK_TRUE(connected.load(std::memory_order_relaxed));
+    CHECK_TRUE(gotPong.load(std::memory_order_relaxed));
 
     std::cout << "TcpClient_retry_test passed\n";
     return 0;

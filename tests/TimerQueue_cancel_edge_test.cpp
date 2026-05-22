@@ -51,7 +51,7 @@ int main()
     // 重复 timer 在自己的回调里取消自己。
     TimerId repeat;
     repeat = loop.runEvery(0.015, [&] {
-        int n = ++repeatCount;
+        int n = repeatCount.fetch_add(1, std::memory_order_relaxed) + 1;
         if (n == 3) {
             loop.cancel(repeat);
         }
@@ -71,7 +71,7 @@ int main()
     CHECK_TRUE(nextFired);
     CHECK_TRUE(onceFired);
     CHECK_TRUE(!canceledByOtherFired);
-    CHECK_EQ(repeatCount.load(), 3);
+    CHECK_EQ(repeatCount.load(std::memory_order_relaxed), 3);
     CHECK_TRUE(lateFired);
 
     std::cout << "TimerQueue_cancel_edge_test passed\n";

@@ -52,7 +52,7 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string nameArg, int sockfd, c
 TcpConnection::~TcpConnection()
 {
     LOG_DEBUG << "TcpConnection destroyed name=" << name_.c_str() << " fd=" << channel_->fd()
-              << " state=" << static_cast<int>(state_.load());
+              << " state=" << static_cast<int>(state_.load(std::memory_order_relaxed));
 }
 
 void TcpConnection::handleRead(Timestamp receiveTime)
@@ -91,7 +91,7 @@ void TcpConnection::handleWrite()
                     auto self = shared_from_this();
                     loop_->queueInLoop([self] { self->writeCompleteCallback_(self); });
                 }
-                if (state_.load() == StateE::kdisconnecting) {
+                if (state_.load(std::memory_order_relaxed) == StateE::kdisconnecting) {
                     shutdownInLoop();
                 }
             }
@@ -103,14 +103,14 @@ void TcpConnection::handleWrite()
     }
     else {   // 当前没有关注可写事件却收到了写回调，通常是状态变化或过期事件导致的。
         LOG_WARN << "unexpected write event on non-writing channel name=" << name_.c_str() << " fd=" << channel_->fd()
-                 << " state=" << static_cast<int>(state_.load());
+                 << " state=" << static_cast<int>(state_.load(std::memory_order_relaxed));
     }
 }
 
 void TcpConnection::handleClose()
 {
     LOG_INFO << "connection closed name=" << name_.c_str() << " fd=" << channel_->fd()
-             << " state=" << static_cast<int>(state_.load()) << " peer=" << peerAddr_.toIpPort().c_str();
+             << " state=" << static_cast<int>(state_.load(std::memory_order_relaxed)) << " peer=" << peerAddr_.toIpPort().c_str();
     setState(StateE::kdisconnected);
     channel_->disableAll();
 
@@ -137,7 +137,7 @@ void TcpConnection::handleError()
 
 void TcpConnection::send(const std::string& buf)
 {
-    if (state_.load() == StateE::kconnected) {
+    if (state_.load(std::memory_order_relaxed) == StateE::kconnected) {
         if (loop_->isInLoopThread()) {
             sendInLoop(buf.c_str(), buf.size());
         }
@@ -149,7 +149,7 @@ void TcpConnection::send(const std::string& buf)
 
 void TcpConnection::send(std::string&& buf)
 {
-    if (state_.load() == StateE::kconnected) {
+    if (state_.load(std::memory_order_relaxed) == StateE::kconnected) {
         if (loop_->isInLoopThread()) {
             sendInLoop(buf.c_str(), buf.size());
         }
@@ -168,7 +168,7 @@ void TcpConnection::sendInLoop(const void* message, size_t len)
     size_t remaining = len;
     bool faultError = false;
 
-    if (state_.load() == StateE::kdisconnected) {
+    if (state_.load(std::memory_order_relaxed) == StateE::kdisconnected) {
         LOG_WARN << "send ignored because connection is disconnected name=" << name_.c_str()
                  << " fd=" << channel_->fd();
         return;
@@ -224,7 +224,7 @@ void TcpConnection::connectEstablished()
 // 连接关闭
 void TcpConnection::connectDestroyed()
 {
-    if (state_.load() == StateE::kconnected) {
+    if (state_.load(std::memory_order_relaxed) == StateE::kconnected) {
         setState(StateE::kdisconnected);
         channel_->disableAll();
 
@@ -236,9 +236,10 @@ void TcpConnection::connectDestroyed()
 
 void TcpConnection::forceClose()
 {
-    StateE expected = state_.load();
+    StateE expected = state_.load(std::memory_order_relaxed);
     while (expected == StateE::kconnected || expected == StateE::kdisconnecting) {
-        if (state_.compare_exchange_weak(expected, StateE::kdisconnecting)) {
+        if (state_.compare_exchange_weak(
+                expected, StateE::kdisconnecting, std::memory_order_relaxed, std::memory_order_relaxed)) {
             loop_->queueInLoop([self = shared_from_this()] { self->forceCloseInLoop(); });
             break;
         }
@@ -248,7 +249,7 @@ void TcpConnection::forceClose()
 void TcpConnection::forceCloseInLoop()
 {
     loop_->assertInLoopThread();
-    StateE state = state_.load();
+    StateE state = state_.load(std::memory_order_relaxed);
     if (state == StateE::kconnected || state == StateE::kdisconnecting) {
         handleClose();
     }
@@ -256,7 +257,7 @@ void TcpConnection::forceCloseInLoop()
 
 void TcpConnection::shutdown()
 {
-    if (state_.load() == StateE::kconnected) {
+    if (state_.load(std::memory_order_relaxed) == StateE::kconnected) {
         setState(StateE::kdisconnecting);
         loop_->runInLoop([self = shared_from_this()] { self->shutdownInLoop(); });
     }
