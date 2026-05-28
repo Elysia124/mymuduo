@@ -1,8 +1,8 @@
-#include "Buffer.h"
-#include "EventLoop.h"
-#include "InetAddress.h"
-#include "TcpConnection.h"
-#include "TcpServer.h"
+#include "net/Buffer.h"
+#include "net/EventLoop.h"
+#include "net/InetAddress.h"
+#include "net/TcpConnection.h"
+#include "net/TcpServer.h"
 #include "test_util.h"
 
 #include <atomic>
@@ -23,7 +23,7 @@ std::string recvUntilEof(int fd)
     for (;;) {
         ssize_t n = ::recv(fd, buf, sizeof(buf), 0);
         if (n > 0) {
-            result.append(buf, static_cast<size_t>(n));
+            result.append(buf, static_cast<std::size_t>(n));
         }
         else if (n == 0) {
             return result;

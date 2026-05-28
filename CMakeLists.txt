@@ -13,7 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Threads REQUIRED)
 
-file(GLOB MYMUDUO_SOURCES
+file(GLOB_RECURSE MYMUDUO_SOURCES
     CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/src/*.cpp
 )
@@ -52,6 +52,7 @@ option(MYMUDUO_BUILD_EXAMPLES "Build mymuduo examples" ON)
 if(MYMUDUO_BUILD_EXAMPLES)
     add_subdirectory(example/server EXCLUDE_FROM_ALL)
     add_subdirectory(example/client EXCLUDE_FROM_ALL)
+    add_subdirectory(example/http EXCLUDE_FROM_ALL)
 endif()
 
 option(MYMUDUO_BUILD_TESTS "Build mymuduo tests" OFF)

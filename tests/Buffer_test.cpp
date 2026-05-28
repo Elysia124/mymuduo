@@ -1,6 +1,7 @@
-#include "Buffer.h"
+#include "net/Buffer.h"
 #include "test_util.h"
 
+#include <cstddef>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -35,7 +36,7 @@ int main()
     std::string b(900, 'b');
     buf.append(a.data(), a.size());
     buf.retrieve(800);
-    const size_t oldPrependable = buf.prependableBytes();
+    const std::size_t oldPrependable = buf.prependableBytes();
     buf.append(b.data(), b.size());
     CHECK_TRUE(buf.prependableBytes() <= oldPrependable); // 触发 makeSpace 后会把可读数据搬回 kCheapPrepend
     CHECK_EQ(buf.readableBytes(), 100u + b.size());

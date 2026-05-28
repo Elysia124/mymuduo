@@ -1,10 +1,11 @@
-#include "Buffer.h"
-#include "EventLoop.h"
-#include "InetAddress.h"
-#include "TcpConnection.h"
-#include "TcpServer.h"
+#include "net/Buffer.h"
+#include "net/EventLoop.h"
+#include "net/InetAddress.h"
+#include "net/TcpConnection.h"
+#include "net/TcpServer.h"
 #include "test_util.h"
 
+#include <cstddef>
 #include <thread>
 
 using namespace mymuduo;
@@ -26,7 +27,7 @@ int main()
 
     std::string big;
     big.resize(1024 * 1024);
-    for (size_t i = 0; i < big.size(); ++i) {
+    for (std::size_t i = 0; i < big.size(); ++i) {
         big[i] = static_cast<char>('a' + (i % 26));
     }
 

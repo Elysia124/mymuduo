@@ -1,0 +1,3 @@
+add_executable(testhttpserver testhttpserver.cpp)
+
+target_link_libraries(testhttpserver PRIVATE mymuduo)

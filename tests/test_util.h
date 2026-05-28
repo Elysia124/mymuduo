@@ -1,14 +1,16 @@
 #pragma once
 
-#include "Logger.h"
+#include "net/Logger.h"
 
 #include <arpa/inet.h>
 #include <cerrno>
 #include <chrono>
+#include <cstddef>
 #include <cstring>
 #include <iostream>
 #include <netinet/in.h>
 #include <string>
+#include <string_view>
 #include <sys/socket.h>
 #include <thread>
 #include <unistd.h>
@@ -23,7 +25,7 @@
 
 #define CHECK_EQ(lhs, rhs) CHECK_TRUE((lhs) == (rhs))
 
-inline void quietOutput(const char*, size_t) {}
+inline void quietOutput(const char*, std::size_t) {}
 inline void quietFlush() {}
 
 inline void quietLogger()
@@ -82,13 +84,13 @@ inline int connectToLocalhost(uint16_t port, int timeoutMs = 3000)
     std::abort();
 }
 
-inline void sendAll(int fd, const std::string& data)
+inline void sendAll(int fd, std::string_view data)
 {
-    size_t sent = 0;
+    std::size_t sent = 0;
     while (sent < data.size()) {
         ssize_t n = ::send(fd, data.data() + sent, data.size() - sent, 0);
         if (n > 0) {
-            sent += static_cast<size_t>(n);
+            sent += static_cast<std::size_t>(n);
         }
         else if (n < 0 && errno == EINTR) {
             continue;
@@ -100,16 +102,16 @@ inline void sendAll(int fd, const std::string& data)
     }
 }
 
-inline std::string recvExactly(int fd, size_t nbytes)
+inline std::string recvExactly(int fd, std::size_t nbytes)
 {
     std::string result;
     result.resize(nbytes);
 
-    size_t received = 0;
+    std::size_t received = 0;
     while (received < nbytes) {
         ssize_t n = ::recv(fd, result.data() + received, nbytes - received, 0);
         if (n > 0) {
-            received += static_cast<size_t>(n);
+            received += static_cast<std::size_t>(n);
         }
         else if (n == 0) {
             std::cerr << "peer closed before receiving enough bytes, got=" << received

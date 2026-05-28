@@ -52,7 +52,7 @@ for t in \
   ManyClients_roundtrip_test
 do
   echo "========== Valgrind: $t =========="
-  valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 ./build/tests/tests$t
+  valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 ./build/tests/tests/$t
 done
 
 echo "All tests passed."
