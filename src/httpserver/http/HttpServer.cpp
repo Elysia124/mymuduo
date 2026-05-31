@@ -78,8 +78,8 @@ void HttpServer::onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp 
     while (buf->readableBytes() > 0) {
         if (!context.parseRequest(buf, receiveTime)) {
             LOG_ERROR << "HTTP close by parse error conn=" << conn->name().c_str()
-                  << " readable=" << buf->readableBytes();
-                  
+                      << " readable=" << buf->readableBytes();
+
             conn->send("HTTP/1.1 400 Bad Request\r\n"
                        "Connection: close\r\n"
                        "Content-Length: 0\r\n"
@@ -115,13 +115,20 @@ void HttpServer::onRequest(const TcpConnectionPtr& conn, const HttpRequest& req)
 
     HttpResponse response(close);
 
-    if (!router_.route(req, &response)) {
-        httpCallback(req, &response);
+    // 先由中间件处理
+    HttpRequest mutableReq = req;
+    const bool continueRoute = middlewareChain_.processBefore(mutableReq, response);
+
+    if (continueRoute) {
+        if (!router_.route(mutableReq, &response)) {
+            httpCallback(mutableReq, &response);
+        }
     }
 
+    middlewareChain_.processAfter(mutableReq, response);
 
     Buffer buf;
-    const bool sendBody = req.method() != HttpRequest::Method::kHead;
+    const bool sendBody = mutableReq.method() != HttpRequest::Method::kHead;
     response.appendToBuffer(&buf, sendBody);
 
     conn->send(&buf);
@@ -224,9 +231,8 @@ void HttpServer::handleIdleTimeout(const std::weak_ptr<TcpConnection>& weakConn)
     // 当前 HTTTP 连接的剩余时间(秒)
     const auto remainSeconds = static_cast<double>(timeoutUs - idleUs) / Timestamp::kMicroSecondsPerSecond;
 
-    std::weak_ptr<TcpConnection> weakAgain(weakConn);
     httpConnCtx->idleTimer =
-        conn->getLoop()->runAfter(remainSeconds, [weakAgain] { handleIdleTimeout(weakAgain); });
+        conn->getLoop()->runAfter(remainSeconds, [weakConn] { handleIdleTimeout(weakConn); });
 }
 
 

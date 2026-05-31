@@ -1,6 +1,8 @@
 #pragma once
 
 #include "httpserver/http/HttpContext.h"
+#include "httpserver/middleware/Middleware.h"
+#include "httpserver/middleware/MiddlewareChain.h"
 #include "httpserver/router/Router.h"
 #include "httpserver/session/SessionManager.h"
 #include "net/Buffer.h"
@@ -60,14 +62,19 @@ public:
     }
     session::SessionManager* getSessionManager() { return sessionManager_.get(); }
 
+    void addMiddleware(std::shared_ptr<middleware::Middleware> middelware)
+    {
+        middlewareChain_.addMiddleware(std::move(middelware));
+    }
+
 private:
     void onConnection(const TcpConnectionPtr& conn);
     void onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp receiveTime);
     void onRequest(const TcpConnectionPtr& conn, const HttpRequest& req);
 
-    void updateLastActiveTime(const TcpConnectionPtr& conn, Timestamp now);
-    void startIdleTimer(const TcpConnectionPtr& conn);
-    void cancelIdleTimer(const TcpConnectionPtr& conn);
+    static void updateLastActiveTime(const TcpConnectionPtr& conn, Timestamp now);
+    static void startIdleTimer(const TcpConnectionPtr& conn);
+    static void cancelIdleTimer(const TcpConnectionPtr& conn);
     static void handleIdleTimeout(const std::weak_ptr<TcpConnection>& weakConn);
 
     static void defaultHttpCallback(const HttpRequest&, HttpResponse*);
@@ -88,5 +95,6 @@ private:
     static constexpr double kKeepAliveIdleTimeout = 60.0;              // 默认超时时间
 
     std::unique_ptr<session::SessionManager> sessionManager_;
+    middleware::MiddlewareChain middlewareChain_;
 };
 }   // namespace mymuduo::http

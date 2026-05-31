@@ -2,6 +2,7 @@
 
 #include <string>
 #include <string_view>
+#include <cctype>
 
 int hexToInt(char c);
 

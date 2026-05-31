@@ -1,6 +1,8 @@
 #include "httpserver/http/HttpRequest.h"
 #include "httpserver/http/HttpResponse.h"
 #include "httpserver/http/HttpServer.h"
+#include "httpserver/middleware/Middleware.h"
+#include "httpserver/middleware/cors/CorsMiddleware.h"
 #include "httpserver/session/MemorySessionStorage.h"
 #include "httpserver/session/SessionManager.h"
 #include "net/EventLoop.h"
@@ -14,12 +16,20 @@
 using namespace mymuduo;
 using namespace mymuduo::http;
 
+class ServerHeaderMiddleware : public middleware::Middleware
+{
+public:
+    void after(const HttpRequest&, HttpResponse& resp) override { resp.setHeader("Server", "mymuduo"); }
+};
+
 int main()
 {
-    Logger::setLogLevel(Logger::ERROR);
+    Logger::setLogLevel(Logger::INFO);
     EventLoop loop;
     InetAddress listenAddr(8888);
     HttpServer server(&loop, listenAddr, "HttpServer");
+    server.addMiddleware(std::make_shared<ServerHeaderMiddleware>());
+    server.addMiddleware(std::make_shared<middleware::CorsMiddleware>());
 
     auto Storage = std::make_unique<session::MemorySessionStorage>();
     Storage->setClearExpiredRegularly(&loop);

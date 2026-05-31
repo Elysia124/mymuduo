@@ -85,6 +85,7 @@ public:
 private:
     void addRoute(HttpRequest::Method method, std::string_view path, HandlerCallback cb);
     void addRoute(HttpRequest::Method method, std::string_view path, HandlerPtr ptr);
+    bool routeWithMethod(HttpRequest::Method method, const HttpRequest& req, HttpResponse* resp) const;
 
     struct RouterEntry
     {

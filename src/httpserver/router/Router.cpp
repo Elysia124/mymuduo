@@ -23,9 +23,9 @@ void Router::addRoute(HttpRequest::Method method, std::string_view path, Handler
     entry.handlerCallback = std::move(cb);
 
     const std::size_t routeId = routes_.size();
-    routes_.push_back(std::move(entry));
 
     tries_[index].insert(path, routeId);
+    routes_.push_back(std::move(entry));
 }
 
 void Router::addRoute(HttpRequest::Method method, std::string_view path, HandlerPtr ptr)
@@ -41,14 +41,14 @@ void Router::addRoute(HttpRequest::Method method, std::string_view path, Handler
     entry.handlerPtr = std::move(ptr);
 
     const std::size_t routeId = routes_.size();
-    routes_.push_back(std::move(entry));
 
     tries_[index].insert(path, routeId);
+    routes_.push_back(std::move(entry));
 }
 
-bool Router::route(const HttpRequest& req, HttpResponse* resp) const
+bool Router::routeWithMethod(HttpRequest::Method method, const HttpRequest& req, HttpResponse* resp) const
 {
-    const std::size_t index = methodIndex(req.method());
+    const std::size_t index = methodIndex(method);
     if (index >= tries_.size()) {
         return false;
     }
@@ -78,4 +78,21 @@ bool Router::route(const HttpRequest& req, HttpResponse* resp) const
     }
 
     return false;
+}
+
+bool Router::route(const HttpRequest& req, HttpResponse* resp) const
+{
+    const auto method = req.method();
+
+    // HEAD 优先匹配 HEAD 路由
+    if (method == HttpRequest::Method::kHead) {
+        if (routeWithMethod(method, req, resp)) {
+            return true;
+        }
+
+        // 如果没有 HEAD 路由，则 fallback 到 GET 路由
+        return routeWithMethod(HttpRequest::Method::kGet, req, resp);
+    }
+
+    return routeWithMethod(method, req, resp);
 }
