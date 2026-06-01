@@ -34,7 +34,8 @@ public:
 
     void add(std::size_t len) { cur_ += len; }
 
-    void reset() { cur_ = data_; }
+    // 清空 buffer
+    void clear() { cur_ = data_; }
 
 private:
     const char* end() const { return data_ + sizeof(data_); }
@@ -45,8 +46,8 @@ private:
 
 // T是整数或浮点数、但不是 bool 和 char
 template<typename T>
-concept Numeric =
-    (std::is_integral_v<T> || std::is_floating_point_v<T>) && !std::is_same_v<T, bool> && !std::is_same_v<T, char>;
+concept Numeric = (std::is_integral_v<T> || std::is_floating_point_v<T>) && !std::is_same_v<T, bool> &&
+                  !std::is_same_v<T, char>;
 
 class LogStream : noncopyable
 {
@@ -91,7 +92,8 @@ private:
         if (buffer_.avail() >= kMaxNumericSize) {
 
             if constexpr (std::is_integral_v<T>) {
-                if (auto [ptr, ec] = std::to_chars(buffer_.current(), buffer_.current() + kMaxNumericSize, value);
+                if (auto [ptr, ec] =
+                        std::to_chars(buffer_.current(), buffer_.current() + kMaxNumericSize, value);
                     ec == std::errc()) {
 
                     std::size_t len = ptr - buffer_.current();
@@ -99,8 +101,10 @@ private:
                 }
             }
             else {
-                if (auto [ptr, ec] = std::to_chars(
-                        buffer_.current(), buffer_.current() + kMaxNumericSize, value, std::chars_format::general);
+                if (auto [ptr, ec] = std::to_chars(buffer_.current(),
+                                                   buffer_.current() + kMaxNumericSize,
+                                                   value,
+                                                   std::chars_format::general);
                     ec == std::errc()) {
 
                     std::size_t len = ptr - buffer_.current();

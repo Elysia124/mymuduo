@@ -15,12 +15,12 @@
 #include <thread>
 #include <unistd.h>
 
-#define CHECK_TRUE(expr)                                                                            \
-    do {                                                                                            \
-        if (!(expr)) {                                                                              \
+#define CHECK_TRUE(expr)                                                                          \
+    do {                                                                                          \
+        if (!(expr)) {                                                                            \
             std::cerr << "CHECK failed: " #expr << " at " << __FILE__ << ':' << __LINE__ << '\n'; \
-            std::abort();                                                                           \
-        }                                                                                           \
+            std::abort();                                                                         \
+        }                                                                                         \
     } while (false)
 
 #define CHECK_EQ(lhs, rhs) CHECK_TRUE((lhs) == (rhs))
@@ -30,9 +30,7 @@ inline void quietFlush() {}
 
 inline void quietLogger()
 {
-    mymuduo::Logger::setOutput(quietOutput);
-    mymuduo::Logger::setFlush(quietFlush);
-    mymuduo::Logger::setLogLevel(mymuduo::Logger::ERROR);
+    mymuduo::Logger::disableLogging();
 }
 
 inline uint16_t pickFreePort()

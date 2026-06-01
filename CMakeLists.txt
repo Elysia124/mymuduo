@@ -14,6 +14,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(Threads REQUIRED)
 
 option(MYMUDUO_ENABLE_MYSQL "Build MySQL utilities" OFF)
+option(ENABLE_LOG "Enable mymuduo normal logs at compile time" ON)
+option(DEFAULT_ASYNC_LOG "Use async logger by default" OFF)
 
 file(GLOB_RECURSE MYMUDUO_SOURCES
     CONFIGURE_DEPENDS
@@ -37,6 +39,12 @@ target_include_directories(mymuduo
 target_link_libraries(mymuduo
     PUBLIC
         Threads::Threads
+)
+
+target_compile_definitions(mymuduo
+    PUBLIC
+        LOG_ENABLED=$<BOOL:${ENABLE_LOG}>
+        DEFAULT_ASYNC_LOG=$<BOOL:${DEFAULT_ASYNC_LOG}>
 )
 
 if(MYMUDUO_ENABLE_MYSQL)

@@ -11,6 +11,8 @@ DO_INSTALL=0
 CLEAN=0
 TARGET=""
 MYSQL_ENABLE=false
+LOG_ENABLE=true
+DEFAULT_ASYNC_LOG=false
 
 BUILD_ROOT=${BUILD_ROOT:-"${SOURCE_DIR}/build"}
 INSTALL_PREFIX=${INSTALL_PREFIX:-"${SOURCE_DIR}/install"}
@@ -35,6 +37,18 @@ for arg in "$@"; do
             ;;
         MySQL_enable)
             MYSQL_ENABLE=true
+            ;;
+        log_on)
+        LOG_ENABLE=true
+            ;;
+        log_off)
+            LOG_ENABLE=false
+            ;;
+        async_log)
+            DEFAULT_ASYNC_LOG=true
+            ;;
+        sync_log)
+            DEFAULT_ASYNC_LOG=false
             ;;
         *)
             echo "Unknown argument: $arg"
@@ -87,6 +101,8 @@ echo "Build type     : ${CMAKE_BUILD_TYPE}"
 echo "Install prefix : ${INSTALL_PREFIX}"
 echo "CXX            : ${CXX}"
 echo "MySQL-Enable   : ${MYSQL_ENABLE}"
+echo "Log-Enable     : ${LOG_ENABLE}"
+echo "Default-Async  : ${DEFAULT_ASYNC_LOG}"
 
 mkdir -p "${BUILD_DIR}"
 
@@ -98,7 +114,9 @@ cmake \
     -DCMAKE_CXX_COMPILER="${CXX}" \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
-    -DMYMUDUO_ENABLE_MYSQL="${MYSQL_ENABLE}"
+    -DMYMUDUO_ENABLE_MYSQL="${MYSQL_ENABLE}"\
+    -DENABLE_LOG="${LOG_ENABLE}" \
+    -DDEFAULT_ASYNC_LOG="${DEFAULT_ASYNC_LOG}"
 
 if [ -n "$TARGET" ]; then
     cmake --build "${BUILD_DIR}" --target "${TARGET}" --parallel "$(nproc)"
