@@ -44,7 +44,7 @@ void RouterTrie::insert(std::string_view path, std::size_t routeId)
             cur = cur->wildcardChild.get();
         }
         else {   // 如果是静态路由
-            auto it = cur->staticChildren.find(segment);
+            auto it = cur->staticChildren.find(std::string(segment));
             if (it == cur->staticChildren.end()) {
                 auto [newIt, inserted] =
                     cur->staticChildren.emplace(std::string(segment), std::make_unique<Node>());
@@ -102,7 +102,7 @@ RouterTrie::Node* RouterTrie::findStaticChild(Node* node, std::string_view segme
 
 const RouterTrie::Node* RouterTrie::findStaticChild(const Node* node, std::string_view segment)
 {
-    auto it = node->staticChildren.find(segment);
+    auto it = node->staticChildren.find(std::string(segment));
     if (it != node->staticChildren.end()) {
         return it->second.get();
     }

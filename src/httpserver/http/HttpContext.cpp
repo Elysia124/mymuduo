@@ -189,7 +189,7 @@ bool HttpContext::processRequestLine(const char* start, const char* end)
             }
 
             begin = space + 1;
-            std::string_view version(begin, end);
+            std::string_view version(begin, static_cast<std::size_t>(end - begin));
             succeed = request_.setVersion(version);
         }
     }

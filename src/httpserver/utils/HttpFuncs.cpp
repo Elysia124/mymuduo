@@ -1,7 +1,7 @@
 #include "httpserver/utils/HttpFuncs.h"
 
 #include <algorithm>
-#include <ranges>
+#include <cctype>
 int hexToInt(char c)
 {
     if (c >= '0' && c <= '9') {
@@ -51,14 +51,14 @@ void trim(std::string& str)
 {
     auto is_not_space = [](unsigned char c) { return !std::isspace(c); };
     // 去除 str 左边的空格
-    str.erase(str.begin(), std::ranges::find_if(str, is_not_space));
+    str.erase(str.begin(), std::find_if(str.begin(), str.end(), is_not_space));
 
     // 删除右边的空格
-    str.erase(std::ranges::find_if(str | std::views::reverse, is_not_space).base(), str.end());
+    str.erase(std::find_if(str.rbegin(), str.rend(), is_not_space).base(), str.end());
 }
 
 void stringToLower(std::string& str)
 {
-    std::ranges::transform(
-        str, str.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(str.begin(), str.end(), str.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 }

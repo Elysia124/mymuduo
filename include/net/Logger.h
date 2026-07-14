@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cerrno>
 
 #ifndef LOG_ENABLED
 #    define LOG_ENABLED 1

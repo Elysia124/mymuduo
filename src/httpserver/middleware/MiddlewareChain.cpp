@@ -4,7 +4,6 @@
 #include "httpserver/middleware/Middleware.h"
 #include "net/Logger.h"
 #include <exception>
-#include <ranges>
 #include <utility>
 
 using namespace mymuduo::http::middleware;
@@ -29,7 +28,8 @@ bool MiddlewareChain::processBefore(HttpRequest& req, HttpResponse& resp)
 void MiddlewareChain::processAfter(const HttpRequest& req, HttpResponse& resp)
 {
     // 反方向处理响应
-    for (const auto& middleware : std::ranges::reverse_view(middlewares_)) {
+    for (auto it = middlewares_.rbegin(); it != middlewares_.rend(); ++it) {
+        const auto& middleware = *it;
         try {
             if (middleware) {
                 middleware->after(req, resp);

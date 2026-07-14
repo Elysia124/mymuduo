@@ -140,7 +140,7 @@ private:
     template<typename T>
     void bindOne(sql::PreparedStatement* pstmt, int index, T&& value)
     {
-        using U = std::remove_cvref_t<T>;       // U 是 T 去掉 const volatile & && 后的类型
+        using U = std::remove_cv_t<std::remove_reference_t<T>>;   // U 是 T 去掉 const volatile & && 后的类型
         if constexpr (isOptional<U>::value) {   // 如果是 std::optional 类型
             if (value.has_value()) {
                 bindOne(pstmt, index, value.value());

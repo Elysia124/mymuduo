@@ -44,24 +44,17 @@ private:
 };
 }   // namespace detail
 
-// T是整数或浮点数、但不是 bool 和 char
-template<typename T>
-concept Numeric = (std::is_integral_v<T> || std::is_floating_point_v<T>) && !std::is_same_v<T, bool> &&
-                  !std::is_same_v<T, char>;
-
 class LogStream : noncopyable
 {
 public:
     using Buffer = detail::FixedBuffer<detail::kSmallBuffer>;
     LogStream& operator<<(bool value);
 
-    // c++17
-    //  template<typename Integer,
-    //           typename = std::enable_if_t<std::is_integral_v<Integer> && !std::is_same_v<Integer, bool>>>
-    //  LogStream& operator<<(Integer value);
-
-    // c++20
-    template<Numeric T>
+    // T 是整数或浮点数，但不是 bool 和 char。
+    template<typename T,
+             std::enable_if_t<(std::is_integral_v<T> || std::is_floating_point_v<T>) &&
+                                  !std::is_same_v<T, bool> && !std::is_same_v<T, char>,
+                              int> = 0>
     LogStream& operator<<(T value)
     {
         formatNumeric(value);

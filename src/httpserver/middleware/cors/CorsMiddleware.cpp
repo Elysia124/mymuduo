@@ -58,14 +58,16 @@ void CorsMiddleware::after(const HttpRequest& req, HttpResponse& resp)
 
 bool CorsMiddleware::isOriginAllowed(std::string_view origin) const
 {
-    return std::ranges::find(corsConfig_.allowedOrigins, "*") != corsConfig_.allowedOrigins.end() ||
-           std::ranges::find(corsConfig_.allowedOrigins, origin) != corsConfig_.allowedOrigins.end();
+    return std::find(corsConfig_.allowedOrigins.begin(), corsConfig_.allowedOrigins.end(), "*") !=
+               corsConfig_.allowedOrigins.end() ||
+           std::find(corsConfig_.allowedOrigins.begin(), corsConfig_.allowedOrigins.end(), origin) !=
+               corsConfig_.allowedOrigins.end();
 }
 
 std::string CorsMiddleware::resolveAllowOrigin(std::string_view origin) const
 {
-    const bool allowAll =
-        std::ranges::find(corsConfig_.allowedOrigins, "*") != corsConfig_.allowedOrigins.end();
+    const bool allowAll = std::find(corsConfig_.allowedOrigins.begin(), corsConfig_.allowedOrigins.end(), "*") !=
+                          corsConfig_.allowedOrigins.end();
 
     // 带 Cookie/Authorization 等凭据时，浏览器不接受 Access-Control-Allow-Origin: *
     if (allowAll && !corsConfig_.allowCredentials) {

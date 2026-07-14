@@ -16,7 +16,7 @@ using namespace mymuduo::http;
 bool HttpRequest::setMethod(const char* start, const char* end)
 {
     assert(method_ == Method::kInvalid);
-    auto str = std::string_view(start, end);
+    auto str = std::string_view(start, static_cast<std::size_t>(end - start));
     if (str == "GET") {
         method_ = Method::kGet;
     }
@@ -59,7 +59,7 @@ bool HttpRequest::setVersion(std::string_view version)
 // 从 '?' 后分离
 void HttpRequest::setQueryParam(const char* start, const char* end)
 {
-    std::string_view str(start, end);
+    std::string_view str(start, static_cast<std::size_t>(end - start));
     std::size_t prev = 0;
     while (prev < str.size()) {
         std::size_t ampPos = str.find('&', prev);   //'&' 的位置
@@ -117,7 +117,7 @@ void HttpRequest::addHeader(const char* start, const char* colon, const char* en
 
 std::optional<std::string> HttpRequest::getQueryParam(std::string_view key) const
 {
-    auto it = queryParams_.find(key);
+    auto it = queryParams_.find(std::string(key));
     if (it == queryParams_.end()) {
         return std::nullopt;
     }
@@ -128,7 +128,7 @@ std::optional<std::string> HttpRequest::getQueryParam(std::string_view key) cons
 // 返回 key 包含的 value 的第一个内容
 std::optional<std::string> HttpRequest::getHeader(std::string_view field) const
 {
-    auto it = headers_.find(field);
+    auto it = headers_.find(std::string(field));
     if (it == headers_.end()) {
         return std::nullopt;
     }
@@ -139,7 +139,7 @@ std::optional<std::string> HttpRequest::getHeader(std::string_view field) const
 // 返回 key 包含的全部 value
 std::vector<std::string> HttpRequest::getHeaders(std::string_view field) const
 {
-    auto it = headers_.find(field);
+    auto it = headers_.find(std::string(field));
     if (it == headers_.end()) {
         return {};
     }
@@ -153,7 +153,7 @@ std::optional<std::string> HttpRequest::getCookie(std::string_view name) const
         parseCookies();
     }
 
-    auto it = cookies_.find(name);
+    auto it = cookies_.find(std::string(name));
     if (it == cookies_.end()) {
         return std::nullopt;
     }

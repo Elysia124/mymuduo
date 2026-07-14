@@ -115,6 +115,14 @@ void AsyncLogging::flush()
 void AsyncLogging::threadFunc()
 {
     std::unique_ptr<LogFile> output;
+    if (!basename_.empty()) {
+        output = std::make_unique<LogFile>(basename_,
+                                           rollSize_,
+                                           false,   // 只有后台线程写文件，不需要 LogFile 内部加锁
+                                           flushInterval_,
+                                           1024,
+                                           append_);
+    }
 
     BufferPtr newBuffer1 = std::make_unique<Buffer>();
     BufferPtr newBuffer2 = std::make_unique<Buffer>();

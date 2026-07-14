@@ -21,9 +21,11 @@ namespace {
 
 bool equalsCaseInsensitive(std::string_view lhs, std::string_view rhs)
 {
-    auto to_lower_proj = [](unsigned char c) { return std::tolower(c); };
     return lhs.size() == rhs.size() &&
-           std::ranges::equal(lhs, rhs, std::ranges::equal_to{}, to_lower_proj, to_lower_proj);
+           std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
+                      [](unsigned char left, unsigned char right) {
+                          return std::tolower(left) == std::tolower(right);
+                      });
 }
 
 bool shouldCloseConnection(const HttpRequest& req)

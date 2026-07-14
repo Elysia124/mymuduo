@@ -33,7 +33,7 @@ std::shared_ptr<Session> MemorySessionStorage::load(std::string_view sessionId)
     auto state = state_;
     std::lock_guard<std::mutex> lock(state->mutex);
 
-    auto it = state->sessions.find(sessionId);
+    auto it = state->sessions.find(std::string(sessionId));
     if (it == state->sessions.end()) {
         return nullptr;
     }
@@ -50,7 +50,7 @@ void MemorySessionStorage::remove(std::string_view sessionId)
 {
     auto state = state_;
     std::lock_guard<std::mutex> lock(state->mutex);
-    if (auto it = state->sessions.find(sessionId); it != state->sessions.end()) {
+    if (auto it = state->sessions.find(std::string(sessionId)); it != state->sessions.end()) {
         state->sessions.erase(it);
     }
 }

@@ -40,7 +40,7 @@ private:
     const bool append_;
 
     int count_ = 0;
-    std::unique_ptr<std::mutex> mutex_;
+    std::unique_ptr<std::mutex> mutex_;   // 同步日志时加锁
 
     std::time_t startOfPeriod_ = 0;
     std::time_t lastRoll_ = 0;

@@ -84,7 +84,7 @@ public:
     {
         assert(start < beginWrite());
         assert(peek() <= start);
-        std::string_view sv(start, beginWrite());
+        std::string_view sv(start, static_cast<std::size_t>(beginWrite() - start));
         std::size_t pos = sv.find("\r\n");
 
         return pos == std::string_view::npos ? nullptr : start + pos;

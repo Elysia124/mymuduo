@@ -36,10 +36,7 @@ int main()
 
     // 同时输出到 stdout
     config.toStdout = true;
-
     mymuduo::Logger::init(config);
-
-    LOG_INFO << "server start";
 
     EventLoop loop;
     InetAddress listenAddr(8888);

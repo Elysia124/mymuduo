@@ -10,6 +10,8 @@
 #include <mutex>
 #include <sys/types.h>
 #include <vector>
+#include <string>
+#include <thread>
 namespace mymuduo {
 class AsyncLogging : noncopyable
 {

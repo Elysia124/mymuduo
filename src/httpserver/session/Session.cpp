@@ -44,7 +44,7 @@ std::optional<std::string> Session::getValue(std::string_view key) const
 {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    auto it = data_.find(key);
+    auto it = data_.find(std::string(key));
     if (it != data_.end()) {
         return it->second;
     }
@@ -55,7 +55,7 @@ void Session::remove(std::string_view key)
 {
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (auto it = data_.find(key); it != data_.end()) {
+        if (auto it = data_.find(std::string(key)); it != data_.end()) {
             data_.erase(it);
         }
     }
